@@ -189,7 +189,7 @@ export const GithubInstallCommand = cmd({
         async function getInstallation() {
           return await fetch(`https://api.opencode.ai/get_github_app_installation?owner=${app.owner}&repo=${app.repo}`)
             .then((res) => res.json())
-            .then((data) => data.installation)
+            .then((data: any) => data.installation)
         }
       }
 

@@ -1,6 +1,7 @@
 import fs from "fs/promises"
 import { xdgData, xdgCache, xdgConfig, xdgState } from "xdg-basedir"
 import path from "path"
+import os from "os"
 
 const app = "opencode"
 
@@ -11,6 +12,7 @@ const state = path.join(xdgState!, app)
 
 export namespace Global {
   export const Path = {
+    home: os.homedir(),
     data,
     bin: path.join(data, "bin"),
     log: path.join(data, "log"),
