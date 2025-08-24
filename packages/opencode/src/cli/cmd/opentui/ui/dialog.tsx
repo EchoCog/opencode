@@ -5,12 +5,12 @@ import { RGBA } from "@opentui/core"
 import { createStore, produce } from "solid-js/store"
 
 const Border = {
-  topLeft: "+",
-  topRight: "+",
-  bottomLeft: "+",
-  bottomRight: "+",
-  horizontal: "-",
-  vertical: "|",
+  topLeft: "┃",
+  topRight: "┃",
+  bottomLeft: "┃",
+  bottomRight: "┃",
+  horizontal: "",
+  vertical: "┃",
   topT: "+",
   bottomT: "+",
   leftT: "+",
@@ -34,11 +34,11 @@ export function Dialog(props: ParentProps) {
     >
       <box
         border={false}
+        customBorderChars={Border}
         width={76}
         maxWidth={dimensions().width - 2}
         backgroundColor={Theme.backgroundPanel}
-        borderColor={Theme.textMuted}
-        borderStyle="rounded"
+        borderColor={Theme.border}
         paddingTop={1}
       >
         {props.children}
