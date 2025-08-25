@@ -1,13 +1,15 @@
-import type { Provider, Session } from "@opencode-ai/sdk"
+import type { Agent, Provider, Session } from "@opencode-ai/sdk"
 import { createStore } from "solid-js/store"
 import { useSDK } from "./sdk"
-import { createContext, onMount, useContext, type ParentProps } from "solid-js"
+import { createContext, onMount, Show, useContext, type ParentProps } from "solid-js"
 import type { Message } from "vscode-jsonrpc"
 
 
 function init() {
   const [store, setStore] = createStore<{
+    ready: boolean
     provider: Provider[]
+    agent: Agent[]
     session: Record<string, {
       info: Session
       message: Record<string, {
@@ -16,6 +18,8 @@ function init() {
       }>
     }>
   }>({
+    ready: false,
+    agent: [],
     provider: [],
     session: {},
   })
@@ -32,7 +36,10 @@ function init() {
     }
   })
 
-  sdk.config.providers().then((x) => setStore("provider", x.data!.providers))
+  Promise.all([
+    sdk.config.providers().then((x) => setStore("provider", x.data!.providers)),
+    sdk.app.agents().then((x) => setStore("agent", x.data ?? [])),
+  ]).then(() => setStore("ready", true))
 
   return {
     data: store,
@@ -46,7 +53,11 @@ const ctx = createContext<SyncContext>()
 
 export function SyncProvider(props: ParentProps) {
   const value = init()
-  return <ctx.Provider value={value}>{props.children}</ctx.Provider>
+  return (
+    <Show when={value.data.ready}>
+      <ctx.Provider value={value}>{props.children}</ctx.Provider>
+    </Show>
+  )
 }
 
 export function useSync() {

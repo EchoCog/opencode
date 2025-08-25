@@ -9,6 +9,7 @@ import * as fuzzysort from "fuzzysort"
 export interface DialogSelectProps {
   title: string
   options: DialogSelectOption[]
+  onSelect: (option: DialogSelectOption) => void
 }
 
 export interface DialogSelectOption {
@@ -20,7 +21,7 @@ export interface DialogSelectOption {
 
 export function DialogSelect(props: DialogSelectProps) {
   const [store, setStore] = createStore({
-    selected: undefined as string | undefined,
+    selected: 0,
     filter: ""
   })
 
@@ -32,12 +33,10 @@ export function DialogSelect(props: DialogSelectProps) {
     return pipe(
       props.options,
       (x) => !needle ? x : fuzzysort.go(needle, x, { keys: ["title", "description", "category"] }).map((x) => x.obj),
-      sortBy((x) => x.category ?? ""),
       take(10),
       groupBy((x) => x.category ?? ""),
       mapValues((x) => x.sort((a, b) => a.title.localeCompare(b.title))),
       entries(),
-      sortBy(([key]) => key === "Recent" ? 0 : key)
     )
   })
 
@@ -49,21 +48,21 @@ export function DialogSelect(props: DialogSelectProps) {
   })
 
   createEffect(() => {
-    const match = flat().find((x) => x.key === store.selected)
-    if (match) return
-    setStore("selected", flat()[0]?.key)
+    store.filter
+    setStore("selected", 0)
   })
 
   function move(direction: -1 | 1) {
-    const next = flat().findIndex((x) => x.key === store.selected) + direction
+    const next = store.selected + direction
     if (next < 0 || next >= flat().length) return
-    setStore("selected", flat()[next].key)
+    setStore("selected", next)
   }
 
 
   useKeyHandler((evt) => {
     if (evt.name === "up") move(-1)
     if (evt.name === "down") move(1)
+    if (evt.name === "return") props.onSelect(flat()[store.selected])
   })
 
 
@@ -98,7 +97,7 @@ export function DialogSelect(props: DialogSelectProps) {
                 </Show>
                 <For each={options}>
                   {(option) =>
-                    <Option title={option.title} description={option.description} active={option.key === store.selected} />
+                    <Option title={option.title} description={option.description} active={option.key === flat()[store.selected].key} />
                   }
                 </For>
               </group>

@@ -3,6 +3,7 @@ import { Installation } from "../../../installation";
 import { Theme } from "./context/theme";
 import { InputRenderable, TextAttributes, bold, fg } from "@opentui/core"
 import { useDialog } from "./ui/dialog";
+import { useLocal } from "./context/local";
 
 export function Home() {
   return (
@@ -27,6 +28,7 @@ export function Home() {
 function Prompt() {
   let input: InputRenderable
   const dialog = useDialog()
+  const local = useLocal()
 
   createEffect(() => {
     if (dialog.stack.length === 0 && input)
@@ -58,13 +60,8 @@ function Prompt() {
         </group>
       </group>
       <group paddingLeft={2} paddingRight={1} flexDirection="row" justifyContent="space-between">
-        <text>
-          enter {fg(Theme.textMuted)("send")}
-        </text>
-        <text>
-          {fg(Theme.textMuted)("opencode ")}
-          {bold("Sonic")}
-        </text>
+        <text>enter {fg(Theme.textMuted)("send")}</text>
+        <text>{fg(Theme.textMuted)(local.model.parsed().provider)} {bold(local.model.parsed().model)}</text>
       </group >
     </group>
   )

@@ -1,18 +1,20 @@
 import { cmd } from "../cmd"
 import { render, useKeyHandler, useRenderer, useTerminalDimensions } from "@opentui/solid"
-import { TextAttributes } from "@opentui/core"
+import { bold, TextAttributes } from "@opentui/core"
 import { RouteProvider, useRoute } from "./context/route"
 import { Home } from "./home"
-import { Switch, Match } from "solid-js"
+import { Switch, Match, createMemo } from "solid-js"
 import { Theme } from "./context/theme"
 import { Installation } from "../../../installation"
 import { Global } from "../../../global"
 import { DialogProvider, useDialog } from "./ui/dialog"
 import { DialogSelect } from "./ui/dialog-select"
-import { entries, flatMap, map, pipe } from "remeda"
+import { entries, filter, flatMap, map, pipe } from "remeda"
 import { bootstrap } from "../../bootstrap"
 import { SDKProvider } from "./context/sdk"
 import { SyncProvider, useSync } from "./context/sync"
+import { LocalProvider, useLocal } from "./context/local"
+import { DialogModel } from "./ui/dialog-model"
 
 export const OpentuiCommand = cmd({
   command: "opentui",
@@ -21,13 +23,15 @@ export const OpentuiCommand = cmd({
     await bootstrap({ cwd: process.cwd() }, async () => {
       await render(() => (
         <RouteProvider>
-          <DialogProvider>
-            <SDKProvider>
-              <SyncProvider>
-                <App />
-              </SyncProvider>
-            </SDKProvider>
-          </DialogProvider>
+          <SDKProvider>
+            <SyncProvider>
+              <LocalProvider>
+                <DialogProvider>
+                  <App />
+                </DialogProvider>
+              </LocalProvider>
+            </SyncProvider>
+          </SDKProvider>
         </RouteProvider>
       ), {
         targetFps: 60,
@@ -42,28 +46,21 @@ function App() {
   const dimensions = useTerminalDimensions()
   const renderer = useRenderer()
   const dialog = useDialog()
-  const sync = useSync()
+  const local = useLocal()
+
 
   useKeyHandler(async (evt) => {
+    if (evt.name === "tab") {
+      local.agent.move(evt.shift ? -1 : 1)
+      return
+    }
+
     if (evt.meta && evt.name === "d") {
       renderer.console.toggle()
       return
     }
     if (evt.meta && evt.name === "m") {
-      const options = pipe(
-        sync.data.provider,
-        flatMap((provider) => pipe(
-          provider.models,
-          entries(),
-          map(([model, info]) => ({
-            key: `${provider.id}/${model}`,
-            title: info.name ?? model,
-            description: provider.name,
-            category: provider.name,
-          })),
-        )),
-      )
-      dialog.replace(<DialogSelect title="Select model" options={options} />)
+      dialog.replace(() => <DialogModel />)
       return
     }
   })
@@ -90,11 +87,8 @@ function App() {
         </group>
         <group flexDirection="row">
           <text paddingRight={1} fg={Theme.textMuted}>tab</text>
-          <text fg={Theme.secondary}>┃</text>
-          <box border={false} backgroundColor={Theme.secondary} paddingLeft={1} paddingRight={1} flexDirection="row" >
-            <text fg={Theme.background} attributes={TextAttributes.BOLD}>BUILD </text>
-            <text fg={Theme.background}>AGENT</text>
-          </box>
+          <text fg={local.agent.color(local.agent.current().name)}>┃</text>
+          <text bg={local.agent.color(local.agent.current().name)} fg={Theme.background}> {bold(local.agent.current().name.toUpperCase())} AGENT </text>
         </group>
       </box>
     </box>

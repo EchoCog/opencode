@@ -68,6 +68,12 @@ function init() {
         produce(val => val.push(input)),
       )
     },
+    clear() {
+      setStore(
+        "stack",
+        [],
+      )
+    },
     replace(input: JSX.Element) {
       setStore(
         "stack",
