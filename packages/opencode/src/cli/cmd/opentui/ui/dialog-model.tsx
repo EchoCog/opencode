@@ -39,13 +39,13 @@ export function DialogModel() {
     )
   ])
 
-  return (<DialogSelect
+  return <DialogSelect
     title="Select model"
+    current={local.model.current()}
     options={options()}
     onSelect={option => {
       local.model.set(option.key, { recent: true })
       dialog.clear()
     }} />
-  )
 
 }

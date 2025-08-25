@@ -1,6 +1,6 @@
 import { InputRenderable, TextAttributes } from "@opentui/core"
 import { Theme } from "../context/theme"
-import { entries, filter, flatMap, groupBy, mapValues, pipe, sortBy, take, values } from "remeda"
+import { entries, flatMap, groupBy, mapValues, pipe, take } from "remeda"
 import { createEffect, createMemo, For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useKeyHandler } from "@opentui/solid"
@@ -10,6 +10,7 @@ export interface DialogSelectProps {
   title: string
   options: DialogSelectOption[]
   onSelect: (option: DialogSelectOption) => void
+  current?: string
 }
 
 export interface DialogSelectOption {
@@ -97,7 +98,7 @@ export function DialogSelect(props: DialogSelectProps) {
                 </Show>
                 <For each={options}>
                   {(option) =>
-                    <Option title={option.title} description={option.description} active={option.key === flat()[store.selected].key} />
+                    <Option title={option.title} description={option.description} active={option.key === flat()[store.selected].key} current={option.key === props.current} />
                   }
                 </For>
               </group>
@@ -115,10 +116,10 @@ export function DialogSelect(props: DialogSelectProps) {
   )
 }
 
-function Option(props: { title: string, description?: string, active?: boolean }) {
+function Option(props: { title: string, description?: string, active?: boolean, current?: boolean }) {
   return (
     <box flexDirection="row" backgroundColor={props.active ? Theme.primary : Theme.backgroundPanel} border={false} paddingLeft={1} paddingRight={1}>
-      <text fg={props.active ? Theme.background : Theme.text} attributes={props.active ? TextAttributes.BOLD : undefined}>{props.title}</text>
+      <text fg={props.active ? Theme.background : props.current ? Theme.primary : Theme.text} attributes={props.active ? TextAttributes.BOLD : undefined}>{props.title}</text>
       <text fg={props.active ? Theme.background : Theme.textMuted}> {props.description}</text>
     </box>
   )
