@@ -92,8 +92,8 @@ function init() {
         batch(() => {
           setStore("model", agent.current().name, model)
           if (options?.recent) {
-            const uniq = unique([...store.recent, model])
-            if (uniq.length > 5) uniq.shift()
+            const uniq = unique([model, ...store.recent])
+            if (uniq.length > 5) uniq.pop()
             setStore("recent", uniq)
           }
         })

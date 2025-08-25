@@ -25,9 +25,9 @@ export function Dialog(props: ParentProps) {
       border={false}
       width={dimensions().width}
       height={dimensions().height}
-      justifyContent="center"
       alignItems="center"
       position="absolute"
+      paddingTop={dimensions().height / 4}
       left={0}
       top={0}
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}

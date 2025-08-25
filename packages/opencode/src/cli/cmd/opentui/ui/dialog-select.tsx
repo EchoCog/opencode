@@ -1,4 +1,4 @@
-import { InputRenderable, TextAttributes } from "@opentui/core"
+import { InputRenderable, RGBA, TextAttributes } from "@opentui/core"
 import { Theme } from "../context/theme"
 import { entries, flatMap, groupBy, mapValues, pipe, take } from "remeda"
 import { createEffect, createMemo, For, Show } from "solid-js"
@@ -33,10 +33,10 @@ export function DialogSelect(props: DialogSelectProps) {
     const needle = store.filter.toLowerCase()
     return pipe(
       props.options,
-      (x) => !needle ? x : fuzzysort.go(needle, x, { keys: ["title", "description", "category"] }).map((x) => x.obj),
+      (x) => !needle ? x : fuzzysort.go(needle, x, { keys: ["title", "category"] }).map((x) => x.obj),
       take(10),
       groupBy((x) => x.category ?? ""),
-      mapValues((x) => x.sort((a, b) => a.title.localeCompare(b.title))),
+      // mapValues((x) => x.sort((a, b) => a.title.localeCompare(b.title))),
       entries(),
     )
   })
@@ -54,8 +54,9 @@ export function DialogSelect(props: DialogSelectProps) {
   })
 
   function move(direction: -1 | 1) {
-    const next = store.selected + direction
-    if (next < 0 || next >= flat().length) return
+    let next = store.selected + direction
+    if (next < 0) next = flat().length - 1
+    if (next >= flat().length) next = 0
     setStore("selected", next)
   }
 
@@ -87,7 +88,7 @@ export function DialogSelect(props: DialogSelectProps) {
               }} placeholder="Enter search term" />
           </group>
         </group>
-        <group paddingBottom={1} >
+        <group paddingBottom={1}  >
           <For each={grouped()}>
             {([category, options]) =>
               <group paddingTop={1} flexShrink={0}  >
@@ -98,7 +99,8 @@ export function DialogSelect(props: DialogSelectProps) {
                 </Show>
                 <For each={options}>
                   {(option) =>
-                    <Option title={option.title} description={option.description} active={option.key === flat()[store.selected].key} current={option.key === props.current} />
+                    <Option
+                      title={option.title} description={option.description !== category ? option.description : undefined} active={option.key === flat()[store.selected].key} current={option.key === props.current} />
                   }
                 </For>
               </group>
@@ -118,7 +120,7 @@ export function DialogSelect(props: DialogSelectProps) {
 
 function Option(props: { title: string, description?: string, active?: boolean, current?: boolean }) {
   return (
-    <box flexDirection="row" backgroundColor={props.active ? Theme.primary : Theme.backgroundPanel} border={false} paddingLeft={1} paddingRight={1}>
+    <box flexDirection="row" backgroundColor={props.active ? Theme.primary : RGBA.fromInts(0, 0, 0, 0)} border={false} paddingLeft={1} paddingRight={1}>
       <text fg={props.active ? Theme.background : props.current ? Theme.primary : Theme.text} attributes={props.active ? TextAttributes.BOLD : undefined}>{props.title}</text>
       <text fg={props.active ? Theme.background : Theme.textMuted}> {props.description}</text>
     </box>
