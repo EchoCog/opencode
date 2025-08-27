@@ -1,9 +1,9 @@
 import { createMemo } from "solid-js";
 import { useLocal } from "../context/local";
 import { useSync } from "../context/sync";
-import { map, pipe, flatMap, entries, filter } from "remeda";
-import { DialogSelect } from "./dialog-select";
-import { useDialog } from "./dialog";
+import { map, pipe, flatMap, entries, filter, isDeepEqual } from "remeda";
+import { DialogSelect } from "../ui/dialog-select";
+import { useDialog } from "../ui/dialog";
 
 export function DialogModel() {
   const local = useLocal()
@@ -11,14 +11,16 @@ export function DialogModel() {
   const dialog = useDialog()
 
   const options = createMemo(() => [
-    ...local.model.recent().map(key => {
-      const [providerID, ...rest] = key.split("/")
-      const provider = sync.data.provider.find((x) => x.id === providerID)!
-      const modelID = rest.join("/")
-      const model = provider.models[modelID]
+    ...local.model.recent().map(item => {
+      const provider = sync.data.provider.find((x) => x.id === item.providerID)!
+      const model = provider.models[item.modelID]
       return {
-        key,
-        title: model.name ?? modelID,
+        key: item,
+        value: {
+          providerID: provider.id,
+          modelID: model.id,
+        },
+        title: model.name ?? item.modelID,
         description: provider.name,
         category: "Recent",
       }
@@ -29,12 +31,15 @@ export function DialogModel() {
         provider.models,
         entries(),
         map(([model, info]) => ({
-          key: `${provider.id}/${model}`,
+          value: {
+            providerID: provider.id,
+            modelID: model,
+          },
           title: info.name ?? model,
           description: provider.name,
           category: provider.name,
         })),
-        filter(x => !local.model.recent().includes(x.key)),
+        filter(x => !local.model.recent().find(y => isDeepEqual(y, x.value))),
       )),
     )
   ])
@@ -44,7 +49,7 @@ export function DialogModel() {
     current={local.model.current()}
     options={options()}
     onSelect={option => {
-      local.model.set(option.key, { recent: true })
+      local.model.set(option.value, { recent: true })
       dialog.clear()
     }} />
 

@@ -11,15 +11,16 @@ type Route =
   }
 
 function init() {
-  const [store, setStore] = createStore<Route>({
-    type: "home",
-  })
+  const [store, setStore] = createStore<Route>(
+    { type: 'session', sessionID: 'ses_71b466c91ffelM4E0ltHr2sQr3' }
+  )
 
   return {
-    get route() {
+    get data() {
       return store
     },
-    set navigate(route: Route) {
+    navigate(route: Route) {
+      console.log("navigate", route)
       setStore(route)
     },
   }
@@ -41,4 +42,9 @@ export function useRoute() {
     throw new Error("useRoute must be used within a RouteProvider")
   }
   return value
+}
+
+export function useRouteData<T extends Route["type"]>(type: T) {
+  const route = useRoute()
+  return route.data as Extract<Route, { type: typeof type }>
 }

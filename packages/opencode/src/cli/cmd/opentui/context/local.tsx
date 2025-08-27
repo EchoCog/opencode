@@ -2,9 +2,10 @@ import { createStore } from "solid-js/store"
 import { batch, createContext, createEffect, createMemo, useContext, type ParentProps } from "solid-js"
 import { useSync } from "./sync"
 import { Theme } from "./theme"
-import { unique } from "remeda"
+import { unique, uniqueBy } from "remeda"
 import path from "path"
 import { Global } from "../../../../global"
+import type { Agent } from "@opencode-ai/sdk"
 
 
 function init() {
@@ -29,7 +30,10 @@ function init() {
         const value = agents()[next]
         setStore("current", value.name)
         if (value.model)
-          model.set(`${value.model.providerID}/${value.model.modelID}`)
+          model.set({
+            providerID: value.model.providerID,
+            modelID: value.model.modelID,
+          })
       },
       color(name: string) {
         const index = agents().findIndex((x) => x.name === name)
@@ -41,8 +45,14 @@ function init() {
 
   const model = (() => {
     const [store, setStore] = createStore<{
-      model: Record<string, string>
-      recent: string[]
+      model: Record<string, {
+        providerID: string
+        modelID: string
+      }>
+      recent: {
+        providerID: string
+        modelID: string
+      }[]
     }>({
       model: {},
       recent: []
@@ -63,12 +73,15 @@ function init() {
     const fallback = createMemo(() => {
       const provider = sync.data.provider[0]
       const model = Object.values(provider.models)[0]
-      return `${provider.id}/${model.id}`
+      return {
+        providerID: provider.id,
+        modelID: model.id,
+      }
     })
 
-    const current = createMemo<string>(() => {
+    const current = createMemo(() => {
       const a = agent.current()
-      return store.model[agent.current().name] ?? (a.model ? `${a.model.providerID}/${a.model.modelID}` : fallback())
+      return store.model[agent.current().name] ?? (a.model ? a.model : fallback())
     })
 
 
@@ -79,20 +92,18 @@ function init() {
       },
       parsed: createMemo(() => {
         const value = current()
-        const [providerID, ...rest] = value.split("/")
-        const provider = sync.data.provider.find((x) => x.id === providerID)!
-        const modelID = rest.join("/")
-        const model = provider.models[modelID]
+        const provider = sync.data.provider.find((x) => x.id === value.providerID)!
+        const model = provider.models[value.modelID]
         return {
-          provider: provider.name ?? providerID,
-          model: model.name ?? modelID,
+          provider: provider.name ?? value.providerID,
+          model: model.name ?? value.modelID,
         }
       }),
-      set(model: string, options?: { recent?: boolean }) {
+      set(model: { providerID: string, modelID: string }, options?: { recent?: boolean }) {
         batch(() => {
           setStore("model", agent.current().name, model)
           if (options?.recent) {
-            const uniq = unique([model, ...store.recent])
+            const uniq = uniqueBy([model, ...store.recent], (x) => x.providerID + x.modelID)
             if (uniq.length > 5) uniq.pop()
             setStore("recent", uniq)
           }

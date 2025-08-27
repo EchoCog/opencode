@@ -12,7 +12,9 @@ import { bootstrap } from "../../bootstrap"
 import { SDKProvider } from "./context/sdk"
 import { SyncProvider } from "./context/sync"
 import { LocalProvider, useLocal } from "./context/local"
-import { DialogModel } from "./ui/dialog-model"
+import { DialogModel } from "./component/dialog-model"
+import { DialogCommand } from "./component/dialog-command"
+import { Session } from "./session"
 
 export const OpentuiCommand = cmd({
   command: "opentui",
@@ -53,6 +55,11 @@ function App() {
       return
     }
 
+    if (evt.ctrl && evt.name === "p") {
+      dialog.replace(() => <DialogCommand />)
+      return
+    }
+
     if (evt.meta && evt.name === "d") {
       renderer.console.toggle()
       return
@@ -67,8 +74,11 @@ function App() {
     <box border={false} width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
       <group flexDirection="column" flexGrow={1}>
         <Switch>
-          <Match when={route.route.type === "home"}>
+          <Match when={route.data.type === "home"}>
             <Home />
+          </Match>
+          <Match when={route.data.type === "session"}>
+            <Session />
           </Match>
         </Switch>
       </group>

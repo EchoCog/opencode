@@ -35,7 +35,7 @@ export function Dialog(props: ParentProps) {
       <box
         border={false}
         customBorderChars={Border}
-        width={76}
+        width={60}
         maxWidth={dimensions().width - 2}
         backgroundColor={Theme.backgroundPanel}
         borderColor={Theme.border}

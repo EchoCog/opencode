@@ -1,8 +1,7 @@
-import type { Agent, Provider, Session } from "@opencode-ai/sdk"
-import { createStore } from "solid-js/store"
+import type { Message, Agent, Provider, Session, Part } from "@opencode-ai/sdk"
+import { createStore, produce } from "solid-js/store"
 import { useSDK } from "./sdk"
-import { createContext, onMount, Show, useContext, type ParentProps } from "solid-js"
-import type { Message } from "vscode-jsonrpc"
+import { createContext, Show, useContext, type ParentProps } from "solid-js"
 
 
 function init() {
@@ -10,27 +9,51 @@ function init() {
     ready: boolean
     provider: Provider[]
     agent: Agent[]
-    session: Record<string, {
-      info: Session
-      message: Record<string, {
-        info: Message
-        part: Record<string, Message>
-      }>
-    }>
+    session: {
+      [sessionID: string]: Session
+    }
+    message: {
+      [sessionID: string]: {
+        [messageID: string]: Message
+      }
+    }
+    part: {
+      [sessionID: string]: {
+        [messageID: string]: {
+          [partID: string]: Part
+        }
+      }
+    }
   }>({
     ready: false,
     agent: [],
     provider: [],
     session: {},
+    message: {},
+    part: {},
   })
 
   const sdk = useSDK()
 
-  onMount(async () => {
-    const events = await sdk.event.subscribe()
+  sdk.event.subscribe().then(async events => {
     for await (const event of events.stream) {
       switch (event.type) {
-        case "storage.write":
+        case "session.updated":
+          setStore("session", event.properties.info.id, event.properties.info)
+          break
+        case "message.updated":
+          setStore("message", produce((message) => {
+            message[event.properties.info.sessionID] ??= {}
+            message[event.properties.info.sessionID][event.properties.info.id] = event.properties.info
+          }))
+          break
+
+        case "message.part.updated":
+          setStore("part", produce((part) => {
+            part[event.properties.part.sessionID] ??= {}
+            part[event.properties.part.sessionID][event.properties.part.messageID] ??= {}
+            part[event.properties.part.sessionID][event.properties.part.messageID][event.properties.part.id] = event.properties.part
+          }))
           break
       }
     }
@@ -39,6 +62,12 @@ function init() {
   Promise.all([
     sdk.config.providers().then((x) => setStore("provider", x.data!.providers)),
     sdk.app.agents().then((x) => setStore("agent", x.data ?? [])),
+    sdk.session.list().then((x) =>
+      setStore("session", x.data!.reduce((acc, item) => {
+        acc[item.id] = item
+        return acc
+      }, {} as Record<string, Session>))
+    ),
   ]).then(() => setStore("ready", true))
 
   return {

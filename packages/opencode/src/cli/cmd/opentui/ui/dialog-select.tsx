@@ -1,26 +1,28 @@
 import { InputRenderable, RGBA, TextAttributes } from "@opentui/core"
 import { Theme } from "../context/theme"
-import { entries, flatMap, groupBy, mapValues, pipe, take } from "remeda"
+import { entries, flatMap, groupBy, pipe, take } from "remeda"
 import { createEffect, createMemo, For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useKeyHandler } from "@opentui/solid"
 import * as fuzzysort from "fuzzysort"
+import { isDeepEqual } from "remeda"
 
-export interface DialogSelectProps {
+export interface DialogSelectProps<T> {
   title: string
-  options: DialogSelectOption[]
-  onSelect: (option: DialogSelectOption) => void
-  current?: string
+  options: DialogSelectOption<T>[]
+  onSelect?: (option: DialogSelectOption<T>) => void
+  current?: T
 }
 
-export interface DialogSelectOption {
-  key: string
+export interface DialogSelectOption<T> {
+  value: T
   title: string
   description?: string
   category?: string
+  onSelect?: () => void
 }
 
-export function DialogSelect(props: DialogSelectProps) {
+export function DialogSelect<T>(props: DialogSelectProps<T>) {
   const [store, setStore] = createStore({
     selected: 0,
     filter: ""
@@ -64,14 +66,18 @@ export function DialogSelect(props: DialogSelectProps) {
   useKeyHandler((evt) => {
     if (evt.name === "up") move(-1)
     if (evt.name === "down") move(1)
-    if (evt.name === "return") props.onSelect(flat()[store.selected])
+    if (evt.name === "return") {
+      const option = flat()[store.selected]
+      if (option.onSelect) option.onSelect()
+      props.onSelect?.(option)
+    }
   })
 
 
   return (
     <group>
       <group paddingLeft={2} paddingRight={2}>
-        <group paddingLeft={1} paddingRight={1}>
+        <group paddingLeft={1}>
           <group flexDirection="row" justifyContent="space-between">
             <text attributes={TextAttributes.BOLD}>{props.title}</text>
             <text fg={Theme.textMuted}>esc</text>
@@ -91,16 +97,19 @@ export function DialogSelect(props: DialogSelectProps) {
         <group paddingBottom={1}  >
           <For each={grouped()}>
             {([category, options]) =>
-              <group paddingTop={1} flexShrink={0}  >
+              <group flexShrink={0}  >
                 <Show when={category}>
-                  <group paddingLeft={1} >
+                  <group paddingTop={1} paddingLeft={1} >
                     <text fg={Theme.accent} attributes={TextAttributes.BOLD}>{category}</text>
                   </group>
                 </Show>
                 <For each={options}>
                   {(option) =>
                     <Option
-                      title={option.title} description={option.description !== category ? option.description : undefined} active={option.key === flat()[store.selected].key} current={option.key === props.current} />
+                      title={option.title}
+                      description={option.description !== category ? option.description : undefined}
+                      active={isDeepEqual(option.value, flat()[store.selected].value)}
+                      current={isDeepEqual(option.value, props.current)} />
                   }
                 </For>
               </group>
@@ -108,7 +117,7 @@ export function DialogSelect(props: DialogSelectProps) {
           </For>
         </group>
       </group>
-      <box border={false} paddingRight={2} paddingLeft={3} paddingBottom={1} paddingTop={1} flexDirection="row"  >
+      <box border={false} paddingRight={2} paddingLeft={3} paddingBottom={1} flexDirection="row"  >
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>n</text>
         <text fg={Theme.textMuted}> new</text>
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>{"   "}r</text>
