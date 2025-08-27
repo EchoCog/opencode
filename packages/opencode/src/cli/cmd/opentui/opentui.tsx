@@ -3,7 +3,7 @@ import { render, useKeyHandler, useRenderer, useTerminalDimensions } from "@open
 import { bold, TextAttributes } from "@opentui/core"
 import { RouteProvider, useRoute } from "./context/route"
 import { Home } from "./home"
-import { Switch, Match } from "solid-js"
+import { Switch, Match, createEffect } from "solid-js"
 import { Theme } from "./context/theme"
 import { Installation } from "../../../installation"
 import { Global } from "../../../global"
@@ -70,15 +70,19 @@ function App() {
     }
   })
 
+  createEffect(() => {
+    console.log(JSON.stringify(route.data))
+  })
+
   return (
     <box border={false} width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
       <group flexDirection="column" flexGrow={1}>
         <Switch>
-          <Match when={route.data.type === "home"}>
-            <Home />
-          </Match>
           <Match when={route.data.type === "session"}>
             <Session />
+          </Match>
+          <Match when={route.data.type === "home"}>
+            <Home />
           </Match>
         </Switch>
       </group>

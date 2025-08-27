@@ -1,5 +1,4 @@
-import { createStore } from "solid-js/store"
-import { createContext, useContext, type ParentProps } from "solid-js"
+import { createContext, createSignal, useContext, type ParentProps } from "solid-js"
 
 type Route =
   | {
@@ -11,13 +10,13 @@ type Route =
   }
 
 function init() {
-  const [store, setStore] = createStore<Route>(
-    { type: 'session', sessionID: 'ses_71b466c91ffelM4E0ltHr2sQr3' }
+  const [store, setStore] = createSignal<Route>(
+    { type: 'home', }
   )
 
   return {
     get data() {
-      return store
+      return store()
     },
     navigate(route: Route) {
       console.log("navigate", route)

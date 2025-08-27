@@ -22,7 +22,7 @@ export function Home() {
           <HelpRow slash="agents">list agents</HelpRow>
         </group>
       </group>
-      <group paddingTop={3} >
+      <group paddingTop={3} minWidth={75} >
         <Prompt onSubmit={async (val) => {
           const session = await sdk.session.create({
             body: {
