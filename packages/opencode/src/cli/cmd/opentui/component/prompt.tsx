@@ -3,6 +3,7 @@ import { createEffect } from "solid-js"
 import { useLocal } from "../context/local"
 import { Theme } from "../context/theme"
 import { useDialog } from "../ui/dialog"
+import { SplitBorder } from "./border"
 
 
 export type PromptProps = {
@@ -21,8 +22,8 @@ export function Prompt(props: PromptProps) {
   })
 
   return (
-    <box>
-      <box flexDirection="row">
+    <box  >
+      <box flexDirection="row" {...SplitBorder}>
         <box backgroundColor={Theme.backgroundElement} width={3} border={false} justifyContent="center" alignItems="center">
           <text attributes={TextAttributes.BOLD} fg={Theme.primary}>{">"}</text>
         </box>
@@ -36,6 +37,6 @@ export function Prompt(props: PromptProps) {
         <text>enter {fg(Theme.textMuted)("send")}</text>
         <text>{fg(Theme.textMuted)(local.model.parsed().provider)} {bold(local.model.parsed().model)}</text>
       </group >
-    </box>
+    </box >
   )
 }
