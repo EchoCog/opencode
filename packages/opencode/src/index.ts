@@ -19,6 +19,7 @@ import { StatsCommand } from "./cli/cmd/stats"
 import { McpCommand } from "./cli/cmd/mcp"
 import { GithubCommand } from "./cli/cmd/github"
 import { OpentuiCommand } from "./cli/cmd/opentui/opentui"
+import { ExportCommand } from "./cli/cmd/export"
 
 const cancel = new AbortController()
 
@@ -82,6 +83,7 @@ const cli = yargs(hideBin(process.argv))
   .command(ServeCommand)
   .command(ModelsCommand)
   .command(StatsCommand)
+  .command(ExportCommand)
   .command(GithubCommand)
   .fail((msg) => {
     if (msg.startsWith("Unknown argument") || msg.startsWith("Not enough non-option arguments")) {
@@ -107,6 +109,7 @@ try {
       name: e.name,
       message: e.message,
       cause: e.cause?.toString(),
+      stack: e.stack,
     })
   }
 

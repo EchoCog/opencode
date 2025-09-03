@@ -1,13 +1,15 @@
-import { Title } from "@solidjs/meta"
-import { onCleanup, onMount } from "solid-js"
 import "./index.css"
-import logo from "../asset/logo-ornate-dark.svg"
-import IMG_SPLASH from "../asset/screenshot-splash.webp"
-import IMG_VSCODE from "../asset/screenshot-vscode.webp"
-import IMG_GITHUB from "../asset/screenshot-github.webp"
+import { Title } from "@solidjs/meta"
+import { Match, onCleanup, onMount, Switch } from "solid-js"
+import logoLight from "../asset/logo-ornate-light.svg"
+import logoDark from "../asset/logo-ornate-dark.svg"
+import IMG_SPLASH from "../asset/lander/screenshot-splash.png"
+import IMG_VSCODE from "../asset/lander/screenshot-vscode.png"
+import IMG_GITHUB from "../asset/lander/screenshot-github.png"
 import { IconCopy, IconCheck } from "../component/icon"
-import { createAsync, query, redirect, RouteDefinition } from "@solidjs/router"
-import { getActor, withActor } from "~/context/auth"
+import { createAsync, query, redirect, A } from "@solidjs/router"
+import { getActor } from "~/context/auth"
+import { withActor } from "~/context/auth.withActor"
 import { Account } from "@opencode/cloud-core/account.js"
 
 function CopyStatus() {
@@ -19,22 +21,17 @@ function CopyStatus() {
   )
 }
 
-const isLoggedIn = query(async () => {
+const defaultWorkspace = query(async () => {
   "use server"
   const actor = await getActor()
   if (actor.type === "account") {
     const workspaces = await withActor(() => Account.workspaces())
-    throw redirect("/" + workspaces[0].id)
+    return workspaces[0].id
   }
-  return
-}, "isLoggedIn")
-
-
+}, "defaultWorkspace")
 
 export default function Home() {
-  createAsync(() => isLoggedIn(), {
-    deferStream: true,
-  })
+  const workspace = createAsync(() => defaultWorkspace())
   onMount(() => {
     const commands = document.querySelectorAll("[data-copy]")
     for (const button of commands) {
@@ -60,13 +57,16 @@ export default function Home() {
       <Title>opencode | AI coding agent built for the terminal</Title>
       <div data-component="content">
         <section data-component="top">
-          <img data-slot="logo" src={logo} alt="logo" />
+          <img data-slot="logo light" src={logoLight} alt="opencode logo light" />
+          <img data-slot="logo dark" src={logoDark} alt="opencode logo dark" />
           <h1 data-slot="title">The AI coding agent built for the terminal.</h1>
         </section>
 
         <section data-component="cta">
           <div data-slot="left">
-            <a href="/docs">Get Started</a>
+            <a href="/docs">
+              Get Started
+            </a>
           </div>
           <div data-slot="right">
             <button data-copy data-slot="command">
@@ -79,6 +79,24 @@ export default function Home() {
               <CopyStatus />
             </button>
           </div>
+        </section>
+
+        <section data-component="zen">
+          <a href="/docs/zen">
+            opencode zen
+          </a>
+          <span data-slot="description">, a curated list of models provided by opencode</span>
+          <span data-slot="divider">&nbsp;/&nbsp;</span>
+          <Switch>
+            <Match when={workspace()}>
+              <A href={"/workspace/" + workspace()}>
+                Dashboard
+              </A>
+            </Match>
+            <Match when={true}>
+              <a href="/auth/authorize">Sign in</a>
+            </Match>
+          </Switch>
         </section>
 
         <section data-component="features">
@@ -146,23 +164,29 @@ export default function Home() {
 
         <section data-component="screenshots">
           <div data-slot="left">
-            <div data-component="title">opencode TUI with tokyonight theme</div>
-            <div data-slot="filler">
-              <img src={IMG_SPLASH} alt="opencode TUI with tokyonight theme" />
-            </div>
+            <figure>
+              <figcaption>opencode TUI with the tokyonight theme</figcaption>
+              <a href="/docs/cli">
+                <img src={IMG_SPLASH} alt="opencode TUI with tokyonight theme" />
+              </a>
+            </figure>
           </div>
           <div data-slot="right">
-            <div data-slot="cell">
-              <div data-component="title">opencode in VS Code</div>
-              <div data-slot="filler">
-                <img src={IMG_VSCODE} alt="opencode in VS Code" />
-              </div>
+            <div data-slot="row1">
+              <figure>
+                <figcaption>opencode in VS Code</figcaption>
+                <a href="/docs/ide">
+                  <img src={IMG_VSCODE} alt="opencode in VS Code" />
+                </a>
+              </figure>
             </div>
-            <div data-slot="cell">
-              <div data-component="title">opencode in GitHub</div>
-              <div data-slot="filler">
-                <img src={IMG_GITHUB} alt="opencode in GitHub" />
-              </div>
+            <div data-slot="row2">
+              <figure>
+                <figcaption>opencode in GitHub</figcaption>
+                <a href="/docs/github">
+                  <img src={IMG_GITHUB} alt="opencode in GitHub" />
+                </a>
+              </figure>
             </div>
           </div>
         </section>
