@@ -20,7 +20,7 @@ export const OpentuiCommand = cmd({
   command: "opentui",
   describe: "print hello",
   handler: async () => {
-    await bootstrap({ cwd: process.cwd() }, async () => {
+    await bootstrap(process.cwd(), async () => {
       await render(() => (
         <RouteProvider>
           <SDKProvider>
@@ -76,7 +76,7 @@ function App() {
 
   return (
     <box border={false} width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
-      <group flexDirection="column" flexGrow={1}>
+      <box flexDirection="column" flexGrow={1}>
         <Switch>
           <Match when={route.data.type === "session"}>
             <Session />
@@ -85,23 +85,23 @@ function App() {
             <Home />
           </Match>
         </Switch>
-      </group>
+      </box>
       <box border={false} height={1} backgroundColor={Theme.backgroundPanel} flexDirection="row" justifyContent="space-between">
-        <group flexDirection="row">
+        <box flexDirection="row">
           <box border={false} flexDirection="row" backgroundColor={Theme.backgroundElement} paddingLeft={1} paddingRight={1}>
             <text fg={Theme.textMuted}>open</text>
             <text attributes={TextAttributes.BOLD}>code{" "}</text>
             <text fg={Theme.textMuted}>v{Installation.VERSION}</text>
           </box>
-          <group paddingLeft={1} paddingRight={1}>
+          <box paddingLeft={1} paddingRight={1}>
             <text fg={Theme.textMuted}>{process.cwd().replace(Global.Path.home, "~")}</text>
-          </group>
-        </group>
-        <group flexDirection="row">
+          </box>
+        </box>
+        <box flexDirection="row">
           <text paddingRight={1} fg={Theme.textMuted}>tab</text>
           <text fg={local.agent.color(local.agent.current().name)}>┃</text>
           <text bg={local.agent.color(local.agent.current().name)} fg={Theme.background}> {bold(local.agent.current().name.toUpperCase())} AGENT </text>
-        </group>
+        </box>
       </box>
     </box>
   )

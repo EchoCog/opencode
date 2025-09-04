@@ -2,10 +2,9 @@ import { createStore } from "solid-js/store"
 import { batch, createContext, createEffect, createMemo, useContext, type ParentProps } from "solid-js"
 import { useSync } from "./sync"
 import { Theme } from "./theme"
-import { unique, uniqueBy } from "remeda"
+import { uniqueBy } from "remeda"
 import path from "path"
 import { Global } from "../../../../global"
-import type { Agent } from "@opencode-ai/sdk"
 
 
 function init() {
@@ -71,6 +70,8 @@ function init() {
     })
 
     const fallback = createMemo(() => {
+      if (store.recent.length)
+        return store.recent[0]
       const provider = sync.data.provider[0]
       const model = Object.values(provider.models)[0]
       return {

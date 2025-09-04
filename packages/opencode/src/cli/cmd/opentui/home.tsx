@@ -11,18 +11,18 @@ export function Home() {
   const route = useRoute()
   const local = useLocal()
   return (
-    <group flexGrow={1} justifyContent="center" alignItems="center">
-      <group>
+    <box flexGrow={1} justifyContent="center" alignItems="center">
+      <box>
         <Logo />
-        <group paddingTop={2}>
+        <box paddingTop={2}>
           <HelpRow slash="new">new session</HelpRow>
           <HelpRow slash="help">show help</HelpRow>
           <HelpRow slash="share">share session</HelpRow>
           <HelpRow slash="models">list models</HelpRow>
           <HelpRow slash="agents">list agents</HelpRow>
-        </group>
-      </group>
-      <group paddingTop={3} minWidth={75} >
+        </box>
+      </box>
+      <box paddingTop={3} minWidth={75} >
         <Prompt onSubmit={async (val) => {
           const session = await sdk.session.create({
             body: {
@@ -32,7 +32,7 @@ export function Home() {
             type: "session",
             sessionID: session.data!.id,
           })
-          await sdk.session.chat({
+          await sdk.session.prompt({
             path: {
               id: session.data!.id,
             },
@@ -48,8 +48,8 @@ export function Home() {
             },
           })
         }} />
-      </group >
-    </group>
+      </box >
+    </box>
   )
 }
 
@@ -63,34 +63,34 @@ function HelpRow(props: { children: string, slash: string }) {
 
 function Logo() {
   return (
-    <group>
-      <group flexDirection="row">
+    <box>
+      <box flexDirection="row">
         <text fg={Theme.textMuted}>
           {"█▀▀█ █▀▀█ █▀▀ █▀▀▄"}
         </text>
         <text fg={Theme.text} attributes={TextAttributes.BOLD} >
           {" █▀▀ █▀▀█ █▀▀▄ █▀▀"}
         </text>
-      </group>
-      <group flexDirection="row">
+      </box>
+      <box flexDirection="row">
         <text fg={Theme.textMuted}>
           {`█░░█ █░░█ █▀▀ █░░█`}
         </text>
         <text fg={Theme.text}>
           {` █░░ █░░█ █░░█ █▀▀`}
         </text>
-      </group>
-      <group flexDirection="row">
+      </box>
+      <box flexDirection="row">
         <text fg={Theme.textMuted}>
           {`▀▀▀▀ █▀▀▀ ▀▀▀ ▀  ▀`}
         </text>
         <text fg={Theme.text}>
           {` ▀▀▀ ▀▀▀▀ ▀▀▀  ▀▀▀`}
         </text>
-      </group>
-      <group flexDirection="row" justifyContent="flex-end">
+      </box>
+      <box flexDirection="row" justifyContent="flex-end">
         <text fg={Theme.textMuted}>{Installation.VERSION}</text>
-      </group>
-    </group>
+      </box>
+    </box>
   )
 }

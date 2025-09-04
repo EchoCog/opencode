@@ -4,12 +4,13 @@ import { Server } from "../../../../server/server"
 
 
 function init() {
-  const server = Server.listen({
-    port: 0,
-    hostname: "127.0.0.1",
-  })
   const client = createOpencodeClient({
-    baseUrl: server.url.toString(),
+    baseUrl: "http://localhost:4096",
+    // @ts-ignore
+    fetch: async (a) => {
+      // @ts-ignore
+      return Server.App.fetch(a)
+    }
   })
   return client
 }

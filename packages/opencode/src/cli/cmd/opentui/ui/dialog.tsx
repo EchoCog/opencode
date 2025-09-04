@@ -95,7 +95,7 @@ export function DialogProvider(props: ParentProps) {
   return (
     <ctx.Provider value={value}>
       {props.children}
-      <group position="absolute">
+      <box position="absolute">
         <For each={value.stack}>
           {(item, index) =>
             <Show when={index() === 0}>
@@ -105,7 +105,7 @@ export function DialogProvider(props: ParentProps) {
             </Show>
           }
         </For>
-      </group>
+      </box>
     </ctx.Provider>
   )
 }

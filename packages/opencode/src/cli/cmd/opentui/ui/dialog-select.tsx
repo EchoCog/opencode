@@ -75,14 +75,14 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
 
 
   return (
-    <group>
-      <group paddingLeft={2} paddingRight={2}>
-        <group paddingLeft={1}>
-          <group flexDirection="row" justifyContent="space-between">
+    <box>
+      <box paddingLeft={2} paddingRight={2}>
+        <box paddingLeft={1}>
+          <box flexDirection="row" justifyContent="space-between">
             <text attributes={TextAttributes.BOLD}>{props.title}</text>
             <text fg={Theme.textMuted}>esc</text>
-          </group>
-          <group paddingTop={1} paddingBottom={1}>
+          </box>
+          <box paddingTop={1} paddingBottom={1}>
             <input
               onInput={(e) => setStore("filter", e)}
               focusedBackgroundColor={Theme.backgroundPanel}
@@ -92,16 +92,16 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
                 input = r
                 input.focus()
               }} placeholder="Enter search term" />
-          </group>
-        </group>
-        <group paddingBottom={1}  >
+          </box>
+        </box>
+        <box paddingBottom={1}  >
           <For each={grouped()}>
             {([category, options]) =>
-              <group flexShrink={0}  >
+              <box flexShrink={0}  >
                 <Show when={category}>
-                  <group paddingTop={1} paddingLeft={1} >
+                  <box paddingTop={1} paddingLeft={1} >
                     <text fg={Theme.accent} attributes={TextAttributes.BOLD}>{category}</text>
-                  </group>
+                  </box>
                 </Show>
                 <For each={options}>
                   {(option) =>
@@ -112,18 +112,18 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
                       current={isDeepEqual(option.value, props.current)} />
                   }
                 </For>
-              </group>
+              </box>
             }
           </For>
-        </group>
-      </group>
+        </box>
+      </box>
       <box border={false} paddingRight={2} paddingLeft={3} paddingBottom={1} flexDirection="row"  >
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>n</text>
         <text fg={Theme.textMuted}> new</text>
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>{"   "}r</text>
         <text fg={Theme.textMuted}> rename</text>
       </box>
-    </group>
+    </box>
   )
 }
 
