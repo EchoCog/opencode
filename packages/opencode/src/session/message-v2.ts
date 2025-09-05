@@ -30,7 +30,7 @@ export namespace MessageV2 {
   export const ToolStateRunning = z
     .object({
       status: z.literal("running"),
-      input: z.any(),
+      input: z.record(z.any()),
       title: z.string().optional(),
       metadata: z.record(z.any()).optional(),
       time: z.object({

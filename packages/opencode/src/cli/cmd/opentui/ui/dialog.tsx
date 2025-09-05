@@ -17,12 +17,14 @@ const Border = {
   rightT: "+",
   cross: "+",
 }
-export function Dialog(props: ParentProps) {
+export function Dialog(props: ParentProps<{
+  size?: "medium" | "large"
+}>) {
   const dimensions = useTerminalDimensions()
 
   return (
     <box
-      border={false}
+
       width={dimensions().width}
       height={dimensions().height}
       alignItems="center"
@@ -33,9 +35,9 @@ export function Dialog(props: ParentProps) {
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
     >
       <box
-        border={false}
+
         customBorderChars={Border}
-        width={60}
+        width={props.size === "large" ? 80 : 60}
         maxWidth={dimensions().width - 2}
         backgroundColor={Theme.backgroundPanel}
         borderColor={Theme.border}
@@ -50,6 +52,7 @@ export function Dialog(props: ParentProps) {
 function init() {
   const [store, setStore] = createStore({
     stack: [] as JSX.Element[],
+    size: "medium" as "medium" | "large",
   })
 
   useKeyHandler((evt) => {
@@ -69,12 +72,14 @@ function init() {
       )
     },
     clear() {
+      setStore("size", "medium")
       setStore(
         "stack",
         [],
       )
     },
     replace(input: JSX.Element) {
+      setStore("size", "medium")
       setStore(
         "stack",
         [input],
@@ -82,6 +87,12 @@ function init() {
     },
     get stack() {
       return store.stack
+    },
+    get size() {
+      return store.size
+    },
+    setSize(size: "medium" | "large") {
+      setStore("size", size)
     },
   }
 }
@@ -99,7 +110,7 @@ export function DialogProvider(props: ParentProps) {
         <For each={value.stack}>
           {(item, index) =>
             <Show when={index() === 0}>
-              <Dialog>
+              <Dialog size={value.size}>
                 {item}
               </Dialog>
             </Show>

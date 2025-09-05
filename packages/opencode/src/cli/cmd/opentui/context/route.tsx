@@ -12,7 +12,7 @@ type Route =
 
 function init() {
   const [store, setStore] = createStore<Route>(
-    { type: 'home', }
+    { type: "home" }
   )
 
   return {

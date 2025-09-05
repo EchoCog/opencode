@@ -1,9 +1,8 @@
 import { useDialog } from "../ui/dialog"
-import { DialogModel } from "./dialog-model"
 import { DialogSelect } from "../ui/dialog-select"
 import { useRoute } from "../context/route"
 import { useSync } from "../context/sync"
-import { createMemo } from "solid-js"
+import { createMemo, onMount } from "solid-js"
 
 export function DialogSessionList() {
   const dialog = useDialog()
@@ -23,6 +22,10 @@ export function DialogSessionList() {
         category,
       }
     })
+  })
+
+  onMount(() => {
+    dialog.setSize("large")
   })
 
   return (

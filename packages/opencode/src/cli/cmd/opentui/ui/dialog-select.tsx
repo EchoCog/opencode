@@ -117,7 +117,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
           </For>
         </box>
       </box>
-      <box border={false} paddingRight={2} paddingLeft={3} paddingBottom={1} flexDirection="row"  >
+      <box paddingRight={2} paddingLeft={3} paddingBottom={1} flexDirection="row"  >
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>n</text>
         <text fg={Theme.textMuted}> new</text>
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>{"   "}r</text>
@@ -129,7 +129,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
 
 function Option(props: { title: string, description?: string, active?: boolean, current?: boolean }) {
   return (
-    <box flexDirection="row" backgroundColor={props.active ? Theme.primary : RGBA.fromInts(0, 0, 0, 0)} border={false} paddingLeft={1} paddingRight={1}>
+    <box flexDirection="row" backgroundColor={props.active ? Theme.primary : RGBA.fromInts(0, 0, 0, 0)} paddingLeft={1} paddingRight={1}>
       <text fg={props.active ? Theme.background : props.current ? Theme.primary : Theme.text} attributes={props.active ? TextAttributes.BOLD : undefined}>{props.title}</text>
       <text fg={props.active ? Theme.background : Theme.textMuted}> {props.description}</text>
     </box>

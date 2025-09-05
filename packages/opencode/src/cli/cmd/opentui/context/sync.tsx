@@ -1,5 +1,5 @@
-import type { Message, Agent, Provider, Session, Part } from "@opencode-ai/sdk"
-import { createStore, produce } from "solid-js/store"
+import type { Message, Agent, Provider, Session, Part, Config } from "@opencode-ai/sdk"
+import { createStore, produce, reconcile } from "solid-js/store"
 import { useSDK } from "./sdk"
 import { createContext, Show, useContext, type ParentProps } from "solid-js"
 
@@ -9,6 +9,7 @@ function init() {
     ready: boolean
     provider: Provider[]
     agent: Agent[]
+    config: Config
     session: {
       [sessionID: string]: Session
     }
@@ -25,6 +26,7 @@ function init() {
       }
     }
   }>({
+    config: {},
     ready: false,
     agent: [],
     provider: [],
@@ -39,7 +41,7 @@ function init() {
     for await (const event of events.stream) {
       switch (event.type) {
         case "session.updated":
-          setStore("session", event.properties.info.id, event.properties.info)
+          setStore("session", event.properties.info.id, reconcile(event.properties.info))
           break
         case "message.updated":
           setStore("message", produce((message) => {
@@ -47,7 +49,6 @@ function init() {
             message[event.properties.info.sessionID][event.properties.info.id] = event.properties.info
           }))
           break
-
         case "message.part.updated":
           setStore("part", produce((part) => {
             part[event.properties.part.sessionID] ??= {}
@@ -68,6 +69,7 @@ function init() {
         return acc
       }, {} as Record<string, Session>))
     ),
+    sdk.config.get().then((x) => setStore("config", x.data!)),
   ]).then(() => setStore("ready", true))
 
   return {

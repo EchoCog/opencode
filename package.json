@@ -42,7 +42,7 @@
   "license": "MIT",
   "prettier": {
     "semi": false,
-    "printWidth": 120
+    "printWidth": 80
   },
   "trustedDependencies": [
     "esbuild",

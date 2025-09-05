@@ -317,7 +317,9 @@ export type ToolStatePending = {
 
 export type ToolStateRunning = {
   status: "running"
-  input?: unknown
+  input: {
+    [key: string]: unknown
+  }
   title?: string
   metadata?: {
     [key: string]: unknown

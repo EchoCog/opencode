@@ -75,7 +75,7 @@ function App() {
   })
 
   return (
-    <box border={false} width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
+    <box width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
       <box flexDirection="column" flexGrow={1}>
         <Switch>
           <Match when={route.data.type === "session"}>
@@ -86,9 +86,9 @@ function App() {
           </Match>
         </Switch>
       </box>
-      <box border={false} height={1} backgroundColor={Theme.backgroundPanel} flexDirection="row" justifyContent="space-between">
+      <box height={1} backgroundColor={Theme.backgroundPanel} flexDirection="row" justifyContent="space-between">
         <box flexDirection="row">
-          <box border={false} flexDirection="row" backgroundColor={Theme.backgroundElement} paddingLeft={1} paddingRight={1}>
+          <box flexDirection="row" backgroundColor={Theme.backgroundElement} paddingLeft={1} paddingRight={1}>
             <text fg={Theme.textMuted}>open</text>
             <text attributes={TextAttributes.BOLD}>code{" "}</text>
             <text fg={Theme.textMuted}>v{Installation.VERSION}</text>

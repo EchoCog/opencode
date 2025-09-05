@@ -23,31 +23,7 @@ export function Home() {
         </box>
       </box>
       <box paddingTop={3} minWidth={75} >
-        <Prompt onSubmit={async (val) => {
-          const session = await sdk.session.create({
-            body: {
-            },
-          })
-          route.navigate({
-            type: "session",
-            sessionID: session.data!.id,
-          })
-          await sdk.session.prompt({
-            path: {
-              id: session.data!.id,
-            },
-            body: {
-              ...local.model.current(),
-              agent: local.agent.current().name,
-              parts: [
-                {
-                  type: "text",
-                  text: val,
-                }
-              ]
-            },
-          })
-        }} />
+        <Prompt />
       </box >
     </box>
   )
