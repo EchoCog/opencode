@@ -1,7 +1,7 @@
 import { InputRenderable, RGBA, TextAttributes } from "@opentui/core"
 import { Theme } from "../context/theme"
 import { entries, flatMap, groupBy, pipe, take } from "remeda"
-import { createEffect, createMemo, For, Show } from "solid-js"
+import { batch, createEffect, createMemo, For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { useKeyHandler } from "@opentui/solid"
 import * as fuzzysort from "fuzzysort"
@@ -10,6 +10,7 @@ import { isDeepEqual } from "remeda"
 export interface DialogSelectProps<T> {
   title: string
   options: DialogSelectOption<T>[]
+  onFilter?: (query: string) => void
   onSelect?: (option: DialogSelectOption<T>) => void
   current?: T
 }
@@ -84,7 +85,12 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
           </box>
           <box paddingTop={1} paddingBottom={1}>
             <input
-              onInput={(e) => setStore("filter", e)}
+              onInput={(e) => {
+                batch(() => {
+                  setStore("filter", e)
+                  props.onFilter?.(e)
+                })
+              }}
               focusedBackgroundColor={Theme.backgroundPanel}
               cursorColor={Theme.primary}
               focusedTextColor={Theme.textMuted}

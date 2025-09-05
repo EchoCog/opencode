@@ -1,5 +1,5 @@
 import { InputRenderable, TextAttributes, fg, bold, BoxRenderable } from "@opentui/core"
-import { createEffect, createMemo, Match, Switch } from "solid-js"
+import { createEffect, createMemo, createResource, For, Match, Switch } from "solid-js"
 import { useLocal } from "../context/local"
 import { Theme } from "../context/theme"
 import { useDialog } from "../ui/dialog"
@@ -9,6 +9,8 @@ import { useRoute } from "../context/route"
 import { useSync } from "../context/sync"
 import { Identifier } from "../../../../id/id"
 import { createStore } from "solid-js/store"
+import { DialogCommand } from "./dialog-command"
+import { DialogTag } from "./dialog-tag"
 
 
 export type PromptProps = {
@@ -56,6 +58,18 @@ export function Prompt(props: PromptProps) {
     return !last.time.completed
   })
 
+  const [files] = createResource(() => [filter()], async () => {
+    if (!store.autocomplete.visible) return []
+    const result = await sdk.find.files({
+      query: {
+        query: filter(),
+      },
+    })
+    if (result.error) return []
+    const sliced = (result.data ?? []).slice(0, 5)
+    return sliced
+  })
+
   createEffect(() => {
     if (dialog.stack.length === 0 && input)
       input.focus()
@@ -63,27 +77,8 @@ export function Prompt(props: PromptProps) {
       input.blur()
   })
 
-  createEffect(() => {
-    if (store.autocomplete.visible) {
-      console.log(store.input.substring(store.autocomplete.index))
-    }
-  })
-
-
   return (
     <>
-      <box
-        visible={store.autocomplete.visible}
-        position="absolute"
-        backgroundColor={Theme.backgroundElement}
-        top={store.autocomplete.position.y - 5}
-        left={store.autocomplete.position.x}
-        width={store.autocomplete.position.width}
-        height={5}
-        zIndex={100}
-        {...SplitBorder}
-      >
-      </box>
       <box ref={r => anchor = r}>
         <box flexDirection="row" {...SplitBorder}>
           <box backgroundColor={Theme.backgroundElement} width={3} justifyContent="center" alignItems="center">
@@ -96,14 +91,13 @@ export function Prompt(props: PromptProps) {
 
                 if (
                   // backspaced past the autocomplete index, hide autocomplete
-                  store.autocomplete.visible && value.length <= store.autocomplete.index ||
-                  // hit space to move on 
-                  filter().includes(" ")
+                  store.autocomplete.visible && value.length <= store.autocomplete.index
                 )
                   setStore("autocomplete", "visible", false)
               }}
+              value={store.input}
               onKeyDown={e => {
-                if (e.name === "@") {
+                if (e.name === "@" && (store.input.at(-1) === " " || store.input.at(-1) === undefined)) {
                   setStore("autocomplete", {
                     visible: true,
                     index: input.value.length,
@@ -133,6 +127,7 @@ export function Prompt(props: PromptProps) {
                     ...local.model.current(),
                     messageID: Identifier.ascending("message"),
                     agent: local.agent.current().name,
+                    model: local.model.current(),
                     parts: [
                       {
                         type: "text",
@@ -163,6 +158,32 @@ export function Prompt(props: PromptProps) {
           <text>{fg(Theme.textMuted)(local.model.parsed().provider)}{" "}{bold(local.model.parsed().model)}</text>
         </box >
       </box >
+      <box
+        visible={store.autocomplete.visible}
+        position="absolute"
+        top={store.autocomplete.position.y - 5}
+        left={store.autocomplete.position.x}
+        width={store.autocomplete.position.width}
+        zIndex={100}
+        {...SplitBorder}
+      >
+        <box
+          backgroundColor={Theme.backgroundElement}
+          paddingLeft={1}
+          paddingRight={1}
+          height={5}
+        >
+          <For each={files() ?? []}>
+            {(file) =>
+              <box>
+                <text>{file}</text>
+              </box>
+            }
+
+          </For>
+        </box>
+      </box>
     </>
   )
 }
+
