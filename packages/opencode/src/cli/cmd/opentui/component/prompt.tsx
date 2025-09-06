@@ -1,5 +1,6 @@
 import { InputRenderable, TextAttributes, fg, bold, BoxRenderable, type ParsedKey } from "@opentui/core"
-import { createEffect, createMemo, createResource, For, Match, Switch } from "solid-js"
+import { createEffect, createMemo, createResource, For, Match, onMount, Switch } from "solid-js"
+
 import { useLocal } from "../context/local"
 import { Theme } from "../context/theme"
 import { useDialog } from "../ui/dialog"
@@ -17,6 +18,7 @@ export type PromptProps = {
 export function Prompt(props: PromptProps) {
   let input: InputRenderable
   let anchor: BoxRenderable
+  let autocomplete: AutocompleteRef
 
 
   const dialog = useDialog()
@@ -27,97 +29,7 @@ export function Prompt(props: PromptProps) {
 
   const [store, setStore] = createStore({
     input: "",
-    autocomplete: {
-      index: 0, selected: 0, visible: false, position: { x: 0, y: 0, width: 0 }
-    }
   })
-
-  const autocomplete = (function () {
-    const filter = createMemo(() => {
-      if (!store.autocomplete.visible) return ""
-      return store.input.substring(store.autocomplete.index + 1)
-    })
-
-    const [files] = createResource(() => [filter()], async () => {
-      console.log(filter())
-      if (!store.autocomplete.visible) return []
-      const result = await sdk.find.files({
-        query: {
-          query: filter(),
-        },
-      })
-      if (result.error) return []
-      const sliced = (result.data ?? []).slice(0, 5)
-      return sliced
-    }, {
-      initialValue: []
-    })
-
-    createEffect(() => {
-      filter()
-      setStore("autocomplete", "selected", 0)
-    })
-
-
-    return {
-      get selection() {
-        return store.autocomplete.selected
-      },
-      get filter() {
-        return filter()
-      },
-      get visible() {
-        return store.autocomplete.visible
-      },
-      get position() {
-        return store.autocomplete.position
-      },
-      get files() {
-        return files()
-      },
-      move(direction: -1 | 1) {
-        if (!store.autocomplete.visible) return
-        let next = store.autocomplete.selected + direction
-        if (next < 0) next = files().length - 1
-        if (next >= files().length) next = 0
-        setStore("autocomplete", "selected", next)
-      },
-      show() {
-        setStore("autocomplete", {
-          visible: true,
-          index: store.input.length,
-          position: {
-            x: anchor.x,
-            y: anchor.y,
-            width: anchor.width,
-          },
-        })
-      },
-      hide() {
-        setStore("autocomplete", "visible", false)
-      },
-      onInput(value: string) {
-        if (value.length <= store.autocomplete.index)
-          autocomplete.hide()
-      },
-      onKeyDown(e: ParsedKey) {
-        if (store.autocomplete.visible) {
-          if (e.name === "up") autocomplete.move(-1)
-          if (e.name === "down") autocomplete.move(1)
-          if (e.name === "escape") autocomplete.hide()
-        }
-        if (!store.autocomplete.visible && e.name === "@") {
-          const last = input.value.at(-1)
-          if (last === " " || last === undefined) {
-            autocomplete.show()
-          }
-        }
-      }
-    }
-  })()
-
-
-
 
   const messages = createMemo(() => {
     if (!props.sessionID) return []
@@ -141,6 +53,15 @@ export function Prompt(props: PromptProps) {
 
   return (
     <>
+      <Autocomplete
+        ref={r => autocomplete = r}
+        anchor={() => anchor}
+        setInput={cb => {
+          setStore("input", cb)
+          input.cursorPosition = (store.input.length)
+        }}
+        value={store.input}
+      />
       <box ref={r => anchor = r}>
         <box flexDirection="row" {...SplitBorder}>
           <box backgroundColor={Theme.backgroundElement} width={3} justifyContent="center" alignItems="center">
@@ -157,7 +78,7 @@ export function Prompt(props: PromptProps) {
                 autocomplete.onKeyDown(e)
               }}
               onSubmit={async (val) => {
-                if (store.autocomplete.visible) return
+                if (autocomplete.visible) return
                 input.value = ""
                 const sessionID = props.sessionID ? props.sessionID : await sdk.session.create({}).then((x) => x.data!.id)
                 route.navigate({
@@ -203,36 +124,144 @@ export function Prompt(props: PromptProps) {
           <text>{fg(Theme.textMuted)(local.model.parsed().provider)}{" "}{bold(local.model.parsed().model)}</text>
         </box >
       </box >
-      <box
-        visible={store.autocomplete.visible}
-        position="absolute"
-        top={autocomplete.position.y - 5}
-        left={autocomplete.position.x}
-        width={autocomplete.position.width}
-        zIndex={100}
-        {...SplitBorder}
-      >
-        <box
-          backgroundColor={Theme.backgroundElement}
-          height={5}
-        >
-          <For each={autocomplete.files}>
-            {(file, index) =>
-              <box
-                paddingLeft={1}
-                paddingRight={1}
-                backgroundColor={index() === autocomplete.selection ? Theme.primary : undefined}
-              >
-                <text
-                  fg={index() === autocomplete.selection ? Theme.background : Theme.text}
-                >{file}</text>
-              </box>
-            }
-
-          </For>
-        </box>
-      </box>
     </>
   )
 }
+
+
+type AutocompleteRef = {
+  onInput: (value: string) => void
+  onKeyDown: (e: ParsedKey) => void
+  visible: boolean
+}
+
+function Autocomplete(props: {
+  value: string
+  setInput: (input: (value: string) => string) => void
+  anchor: () => BoxRenderable
+  ref: (ref: AutocompleteRef) => void
+}) {
+  const sdk = useSDK()
+  const [store, setStore] = createStore({
+    index: 0,
+    selected: 0,
+    visible: false,
+    position: { x: 0, y: 0, width: 0 }
+  })
+  const filter = createMemo(() => {
+    if (!store.visible) return ""
+    return props.value.substring(store.index + 1)
+  })
+
+  const [files] = createResource(() => [filter()], async () => {
+    if (!store.visible) return []
+    const result = await sdk.find.files({
+      query: {
+        query: filter(),
+      },
+    })
+    if (result.error) return []
+    const sliced = (result.data ?? []).slice(0, 5)
+    return sliced
+  }, {
+    initialValue: []
+  })
+
+  createEffect(() => {
+    filter()
+    setStore("selected", 0)
+  })
+
+
+  function move(direction: -1 | 1) {
+    if (!store.visible) return
+    let next = store.selected + direction
+    if (next < 0) next = files().length - 1
+    if (next >= files().length) next = 0
+    setStore("selected", next)
+  }
+
+  function show(input: string) {
+    setStore({
+      visible: true,
+      index: input.length,
+      position: {
+        x: props.anchor().x,
+        y: props.anchor().y,
+        width: props.anchor().width,
+      },
+    })
+  }
+
+  function hide() {
+    setStore("visible", false)
+  }
+
+
+  onMount(() => {
+    props.ref({
+      get visible() {
+        return store.visible
+      },
+      onInput(value: string) {
+        if (value.length <= store.index)
+          hide()
+      },
+      onKeyDown(e: ParsedKey) {
+        if (store.visible) {
+          if (e.name === "up") move(-1)
+          if (e.name === "down") move(1)
+          if (e.name === "escape") hide()
+          if (e.name === "return") {
+            props.setInput(val => {
+              const append = files()[store.selected] + " "
+              if (store.index === 0) return append
+              return val.slice(0, store.index) + append
+            })
+            setTimeout(() => hide(), 0)
+          }
+        }
+        if (!store.visible && e.name === "@") {
+          const last = props.value.at(-1)
+          if (last === " " || last === undefined) {
+            show(props.value)
+          }
+        }
+      }
+    })
+  })
+
+  return (
+    <box
+      visible={store.visible}
+      position="absolute"
+      top={store.position.y - 5}
+      left={store.position.x}
+      width={store.position.width}
+      zIndex={100}
+      {...SplitBorder}
+    >
+      <box
+        backgroundColor={Theme.backgroundElement}
+        height={5}
+      >
+        <For each={files()}>
+          {(file, index) =>
+            <box
+              paddingLeft={1}
+              paddingRight={1}
+              backgroundColor={index() === store.selected ? Theme.primary : undefined}
+            >
+              <text
+                fg={index() === store.selected ? Theme.background : Theme.text}
+              >{file}</text>
+            </box>
+          }
+
+        </For>
+      </box>
+    </box>
+  )
+}
+
 

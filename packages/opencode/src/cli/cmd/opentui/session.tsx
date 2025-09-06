@@ -52,7 +52,7 @@ export function Session() {
   })
 
   return (
-    <box paddingTop={1} paddingBottom={1} paddingLeft={2} paddingRight={2} flexGrow={1}>
+    <box paddingTop={1} paddingBottom={1} paddingLeft={2} paddingRight={2} flexGrow={1} maxHeight="100%">
       <Show when={session()}>
         <box paddingLeft={1} paddingRight={1} {...SplitBorder} borderColor={Theme.backgroundElement}>
           <text>
@@ -69,7 +69,15 @@ export function Session() {
             </Switch>
           </box>
         </box>
-        <box flexGrow={1} gap={1} paddingTop={1}>
+        <scrollbox
+          paddingTop={1}
+          paddingBottom={1}
+          contentOptions={{
+            minWidth: "100%",
+            flexGrow: 1,
+            gap: 1,
+          }}
+        >
           <For each={messages()}>
             {(message) => (
               <Switch>
@@ -88,8 +96,8 @@ export function Session() {
               </Switch>
             )}
           </For>
-        </box>
-        <box>
+        </scrollbox>
+        <box flexShrink={0}>
           <Prompt sessionID={route.sessionID} />
         </box>
       </Show>

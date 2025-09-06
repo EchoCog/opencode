@@ -37,7 +37,6 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
     return pipe(
       props.options,
       (x) => !needle ? x : fuzzysort.go(needle, x, { keys: ["title", "category"] }).map((x) => x.obj),
-      take(10),
       groupBy((x) => x.category ?? ""),
       // mapValues((x) => x.sort((a, b) => a.title.localeCompare(b.title))),
       entries(),
@@ -100,7 +99,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
               }} placeholder="Enter search term" />
           </box>
         </box>
-        <box paddingBottom={1}  >
+        <scrollbox paddingBottom={1} maxHeight={10}  >
           <For each={grouped()}>
             {([category, options]) =>
               <box flexShrink={0}  >
@@ -121,7 +120,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
               </box>
             }
           </For>
-        </box>
+        </scrollbox>
       </box>
       <box paddingRight={2} paddingLeft={3} paddingBottom={1} flexDirection="row"  >
         <text fg={Theme.text} attributes={TextAttributes.BOLD}>n</text>
