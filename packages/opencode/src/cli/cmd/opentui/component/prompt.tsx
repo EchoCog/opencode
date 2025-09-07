@@ -1,5 +1,20 @@
-import { InputRenderable, TextAttributes, fg, bold, BoxRenderable, type ParsedKey } from "@opentui/core"
-import { createEffect, createMemo, createResource, For, Match, onMount, Switch } from "solid-js"
+import {
+  InputRenderable,
+  TextAttributes,
+  fg,
+  bold,
+  BoxRenderable,
+  type ParsedKey,
+} from "@opentui/core"
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  For,
+  Match,
+  onMount,
+  Switch,
+} from "solid-js"
 
 import { useLocal } from "../context/local"
 import { Theme } from "../context/theme"
@@ -11,7 +26,6 @@ import { useSync } from "../context/sync"
 import { Identifier } from "../../../../id/id"
 import { createStore } from "solid-js/store"
 
-
 export type PromptProps = {
   sessionID?: string
 }
@@ -19,7 +33,6 @@ export function Prompt(props: PromptProps) {
   let input: InputRenderable
   let anchor: BoxRenderable
   let autocomplete: AutocompleteRef
-
 
   const dialog = useDialog()
   const local = useLocal()
@@ -33,7 +46,7 @@ export function Prompt(props: PromptProps) {
 
   const messages = createMemo(() => {
     if (!props.sessionID) return []
-    return Object.values(sync.data.message[props.sessionID] ?? {})
+    return sync.data.message[props.sessionID] ?? []
   })
   const working = createMemo(() => {
     const last = messages()[messages().length - 1]
@@ -42,39 +55,47 @@ export function Prompt(props: PromptProps) {
     return !last.time.completed
   })
 
-
   createEffect(() => {
-    if (dialog.stack.length === 0 && input)
-      input.focus()
-    if (dialog.stack.length > 0)
-      input.blur()
+    if (dialog.stack.length === 0 && input) input.focus()
+    if (dialog.stack.length > 0) input.blur()
   })
-
 
   return (
     <>
       <Autocomplete
-        ref={r => autocomplete = r}
+        ref={(r) => (autocomplete = r)}
         anchor={() => anchor}
-        setInput={cb => {
+        setInput={(cb) => {
           setStore("input", cb)
-          input.cursorPosition = (store.input.length)
+          input.cursorPosition = store.input.length
         }}
         value={store.input}
       />
-      <box ref={r => anchor = r}>
+      <box ref={(r) => (anchor = r)}>
         <box flexDirection="row" {...SplitBorder}>
-          <box backgroundColor={Theme.backgroundElement} width={3} justifyContent="center" alignItems="center">
-            <text attributes={TextAttributes.BOLD} fg={Theme.primary}>{">"}</text>
+          <box
+            backgroundColor={Theme.backgroundElement}
+            width={3}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <text attributes={TextAttributes.BOLD} fg={Theme.primary}>
+              {">"}
+            </text>
           </box>
-          <box paddingTop={1} paddingBottom={2} backgroundColor={Theme.backgroundElement} flexGrow={1}>
+          <box
+            paddingTop={1}
+            paddingBottom={2}
+            backgroundColor={Theme.backgroundElement}
+            flexGrow={1}
+          >
             <input
               onInput={(value) => {
                 setStore("input", value)
                 autocomplete.onInput(value)
               }}
               value={store.input}
-              onKeyDown={e => {
+              onKeyDown={(e) => {
                 autocomplete.onKeyDown(e)
               }}
               onSubmit={async (val) => {
@@ -82,14 +103,18 @@ export function Prompt(props: PromptProps) {
                 console.log("submitting")
                 input.value = ""
                 console.log({ sessionID: props.sessionID })
-                const sessionID = props.sessionID ? props.sessionID : await (async () => {
-                  const sessionID = await sdk.session.create({}).then((x) => x.data!.id)
-                  route.navigate({
-                    type: "session",
-                    sessionID,
-                  })
-                  return sessionID
-                })()
+                const sessionID = props.sessionID
+                  ? props.sessionID
+                  : await (async () => {
+                      const sessionID = await sdk.session
+                        .create({})
+                        .then((x) => x.data!.id)
+                      route.navigate({
+                        type: "session",
+                        sessionID,
+                      })
+                      return sessionID
+                    })()
                 await sdk.session.prompt({
                   path: {
                     id: sessionID,
@@ -103,20 +128,31 @@ export function Prompt(props: PromptProps) {
                       {
                         type: "text",
                         text: val,
-                      }
-                    ]
+                      },
+                    ],
                   },
                 })
               }}
-              ref={r => input = r} onMouseDown={r => r.target?.focus()}
+              ref={(r) => (input = r)}
+              onMouseDown={(r) => r.target?.focus()}
               focusedBackgroundColor={Theme.backgroundElement}
               cursorColor={Theme.primary}
-              backgroundColor={Theme.backgroundElement} />
+              backgroundColor={Theme.backgroundElement}
+            />
           </box>
-          <box backgroundColor={Theme.backgroundElement} width={1} justifyContent="center" alignItems="center">
-          </box>
+          <box
+            backgroundColor={Theme.backgroundElement}
+            width={1}
+            justifyContent="center"
+            alignItems="center"
+          ></box>
         </box>
-        <box paddingLeft={2} paddingRight={1} flexDirection="row" justifyContent="space-between">
+        <box
+          paddingLeft={2}
+          paddingRight={1}
+          flexDirection="row"
+          justifyContent="space-between"
+        >
           <Switch>
             <Match when={working()}>
               <text>working...</text>
@@ -124,15 +160,16 @@ export function Prompt(props: PromptProps) {
             <Match when={true}>
               <text>enter {fg(Theme.textMuted)("send")}</text>
             </Match>
-
           </Switch>
-          <text>{fg(Theme.textMuted)(local.model.parsed().provider)}{" "}{bold(local.model.parsed().model)}</text>
-        </box >
-      </box >
+          <text>
+            {fg(Theme.textMuted)(local.model.parsed().provider)}{" "}
+            {bold(local.model.parsed().model)}
+          </text>
+        </box>
+      </box>
     </>
   )
 }
-
 
 type AutocompleteRef = {
   onInput: (value: string) => void
@@ -151,32 +188,35 @@ function Autocomplete(props: {
     index: 0,
     selected: 0,
     visible: false,
-    position: { x: 0, y: 0, width: 0 }
+    position: { x: 0, y: 0, width: 0 },
   })
   const filter = createMemo(() => {
     if (!store.visible) return ""
     return props.value.substring(store.index + 1)
   })
 
-  const [files] = createResource(() => [filter()], async () => {
-    if (!store.visible) return []
-    const result = await sdk.find.files({
-      query: {
-        query: filter(),
-      },
-    })
-    if (result.error) return []
-    const sliced = (result.data ?? []).slice(0, 5)
-    return sliced
-  }, {
-    initialValue: []
-  })
+  const [files] = createResource(
+    () => [filter()],
+    async () => {
+      if (!store.visible) return []
+      const result = await sdk.find.files({
+        query: {
+          query: filter(),
+        },
+      })
+      if (result.error) return []
+      const sliced = (result.data ?? []).slice(0, 5)
+      return sliced
+    },
+    {
+      initialValue: [],
+    },
+  )
 
   createEffect(() => {
     filter()
     setStore("selected", 0)
   })
-
 
   function move(direction: -1 | 1) {
     if (!store.visible) return
@@ -202,15 +242,13 @@ function Autocomplete(props: {
     setStore("visible", false)
   }
 
-
   onMount(() => {
     props.ref({
       get visible() {
         return store.visible
       },
       onInput(value: string) {
-        if (value.length <= store.index)
-          hide()
+        if (value.length <= store.index) hide()
       },
       onKeyDown(e: ParsedKey) {
         if (store.visible) {
@@ -218,7 +256,7 @@ function Autocomplete(props: {
           if (e.name === "down") move(1)
           if (e.name === "escape") hide()
           if (e.name === "return") {
-            props.setInput(val => {
+            props.setInput((val) => {
               const append = files()[store.selected] + " "
               if (store.index === 0) return append
               return val.slice(0, store.index) + append
@@ -232,7 +270,7 @@ function Autocomplete(props: {
             show(props.value)
           }
         }
-      }
+      },
     })
   })
 
@@ -246,27 +284,25 @@ function Autocomplete(props: {
       zIndex={100}
       {...SplitBorder}
     >
-      <box
-        backgroundColor={Theme.backgroundElement}
-        height={5}
-      >
+      <box backgroundColor={Theme.backgroundElement} height={5}>
         <For each={files()}>
-          {(file, index) =>
+          {(file, index) => (
             <box
               paddingLeft={1}
               paddingRight={1}
-              backgroundColor={index() === store.selected ? Theme.primary : undefined}
+              backgroundColor={
+                index() === store.selected ? Theme.primary : undefined
+              }
             >
               <text
                 fg={index() === store.selected ? Theme.background : Theme.text}
-              >{file}</text>
+              >
+                {file}
+              </text>
             </box>
-          }
-
+          )}
         </For>
       </box>
     </box>
   )
 }
-
-

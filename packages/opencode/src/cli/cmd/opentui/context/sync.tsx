@@ -1,8 +1,15 @@
-import type { Message, Agent, Provider, Session, Part, Config } from "@opencode-ai/sdk"
+import type {
+  Message,
+  Agent,
+  Provider,
+  Session,
+  Part,
+  Config,
+} from "@opencode-ai/sdk"
 import { createStore, produce, reconcile } from "solid-js/store"
 import { useSDK } from "./sdk"
 import { createContext, Show, useContext, type ParentProps } from "solid-js"
-
+import { Binary } from "../../../../util/binary"
 
 function init() {
   const [store, setStore] = createStore<{
@@ -10,51 +17,72 @@ function init() {
     provider: Provider[]
     agent: Agent[]
     config: Config
-    session: {
-      [sessionID: string]: Session
-    }
+    session: Session[]
     message: {
-      [sessionID: string]: {
-        [messageID: string]: Message
-      }
+      [sessionID: string]: Message[]
     }
     part: {
-      [sessionID: string]: {
-        [messageID: string]: {
-          [partID: string]: Part
-        }
-      }
+      [messageID: string]: Part[]
     }
   }>({
     config: {},
     ready: false,
     agent: [],
     provider: [],
-    session: {},
+    session: [],
     message: {},
     part: {},
   })
 
   const sdk = useSDK()
 
-  sdk.event.subscribe().then(async events => {
+  sdk.event.subscribe().then(async (events) => {
     for await (const event of events.stream) {
       switch (event.type) {
         case "session.updated":
-          setStore("session", event.properties.info.id, reconcile(event.properties.info))
+          const result = Binary.search(store.session, event.properties.info.id, (s) => s.id)
+          setStore(
+            "session",
+            result.index,
+            reconcile(event.properties.info),
+          )
           break
         case "message.updated":
-          setStore("message", produce((message) => {
-            message[event.properties.info.sessionID] ??= {}
-            message[event.properties.info.sessionID][event.properties.info.id] = event.properties.info
-          }))
+          setStore(
+            "message",
+            produce((draft) => {
+              const messages = draft[event.properties.info.sessionID] ??= []
+              const result = Binary.search(
+                messages,
+                event.properties.info.id,
+                (m) => m.id,
+              )
+              if (result.found) {
+                messages[result.index] = event.properties.info
+                return
+              }
+              messages.splice(result.index, 0, event.properties.info)
+            }),
+          )
           break
         case "message.part.updated":
-          setStore("part", produce((part) => {
-            part[event.properties.part.sessionID] ??= {}
-            part[event.properties.part.sessionID][event.properties.part.messageID] ??= {}
-            part[event.properties.part.sessionID][event.properties.part.messageID][event.properties.part.id] = event.properties.part
-          }))
+          setStore(
+            "part",
+            produce((draft) => {
+              const parts = draft[event.properties.part.messageID] ??= []
+              const result = Binary.search(
+                parts,
+                event.properties.part.id,
+                (p) => p.id,
+              )
+              if (result.found) {
+                parts[result.index] = event.properties.part
+                return
+              }
+              parts.splice(result.index, 0, event.properties.part)
+
+            }),
+          )
           break
       }
     }
@@ -63,18 +91,34 @@ function init() {
   Promise.all([
     sdk.config.providers().then((x) => setStore("provider", x.data!.providers)),
     sdk.app.agents().then((x) => setStore("agent", x.data ?? [])),
-    sdk.session.list().then((x) =>
-      setStore("session", x.data!.reduce((acc, item) => {
-        acc[item.id] = item
-        return acc
-      }, {} as Record<string, Session>))
-    ),
+    sdk.session.list().then((x) => setStore("session", x.data ?? [])),
     sdk.config.get().then((x) => setStore("config", x.data!)),
   ]).then(() => setStore("ready", true))
 
   return {
     data: store,
     set: setStore,
+    session: {
+      get(sessionID: string) {
+        const match = Binary.search(store.session, sessionID, (s) => s.id)
+        if (match.found) return store.session[match.index]
+        return undefined
+      },
+      async sync(sessionID: string) {
+        const [session, messages] = await Promise.all([
+          sdk.session.get({ path: { id: sessionID } }),
+          sdk.session.messages({ path: { id: sessionID } }),
+        ])
+        setStore(produce((draft) => {
+          const match = Binary.search(draft.session, sessionID, (s) => s.id)
+          draft.session[match.index] = session.data!
+          draft.message[sessionID] = messages.data!.map((x) => x.info)
+          for (const message of messages.data!) {
+            draft.part[message.info.id] = message.parts
+          }
+        }))
+      }
+    },
   }
 }
 

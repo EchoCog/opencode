@@ -5,56 +5,46 @@ import { SplitBorder } from "./component/border"
 import { Theme } from "./context/theme"
 import { bold, fg, SyntaxStyle } from "@opentui/core"
 import { Prompt } from "./component/prompt"
-import { useSDK } from "./context/sdk"
-import { produce } from "solid-js/store"
-import type { AssistantMessage, Part, ToolPart, UserMessage } from "@opencode-ai/sdk"
+import type {
+  AssistantMessage,
+  Part,
+  ToolPart,
+  UserMessage,
+} from "@opencode-ai/sdk"
 import type { TextPart } from "ai"
 import { useLocal } from "./context/local"
 import { Locale } from "../../../util/locale"
 import { RGBA, hastToStyledText } from "@opentui/core"
 import highlight from "tree-sitter-highlight"
 import type { Tool } from "../../../tool/tool"
-import type { BashTool } from "../../../tool/bash"
+
 import type { ReadTool } from "../../../tool/read"
 import type { WriteTool } from "../../../tool/write"
+import { BashTool } from "../../../tool/bash"
 
 export function Session() {
   const route = useRouteData("session")
-  const sdk = useSDK()
   const sync = useSync()
-  const session = createMemo(() => sync.data.session[route.sessionID])
-  const messages = createMemo(() => Object.values(sync.data.message[route.sessionID] ?? {}))
-
-  createEffect(() => {
-    sdk.session
-      .messages({
-        path: {
-          id: route.sessionID,
-        },
-      })
-      .then((result) => {
-        if (result.data) {
-          sync.set(
-            produce((draft) => {
-              for (const message of result.data) {
-                draft.message[route.sessionID] ??= {}
-                draft.message[route.sessionID][message.info.id] = message.info
-                for (const part of message.parts) {
-                  draft.part[route.sessionID] ??= {}
-                  draft.part[route.sessionID][message.info.id] ??= {}
-                  draft.part[route.sessionID][message.info.id][part.id] = part
-                }
-              }
-            }),
-          )
-        }
-      })
-  })
+  const session = createMemo(() => sync.session.get(route.sessionID)!)
+  const messages = createMemo(() => sync.data.message[route.sessionID] ?? [])
+  createEffect(() => sync.session.sync(route.sessionID))
 
   return (
-    <box paddingTop={1} paddingBottom={1} paddingLeft={2} paddingRight={2} flexGrow={1} maxHeight="100%">
+    <box
+      paddingTop={1}
+      paddingBottom={1}
+      paddingLeft={2}
+      paddingRight={2}
+      flexGrow={1}
+      maxHeight="100%"
+    >
       <Show when={session()}>
-        <box paddingLeft={1} paddingRight={1} {...SplitBorder} borderColor={Theme.backgroundElement}>
+        <box
+          paddingLeft={1}
+          paddingRight={1}
+          {...SplitBorder}
+          borderColor={Theme.backgroundElement}
+        >
           <text>
             {bold(fg(Theme.accent)("#"))} {bold(session().title)}
           </text>
@@ -64,7 +54,9 @@ export function Session() {
                 <text fg={Theme.textMuted}>{session().share!.url}</text>
               </Match>
               <Match when={true}>
-                <text>/share {fg(Theme.textMuted)("to create a shareable link")}</text>
+                <text>
+                  /share {fg(Theme.textMuted)("to create a shareable link")}
+                </text>
               </Match>
             </Switch>
           </box>
@@ -84,13 +76,13 @@ export function Session() {
                 <Match when={message.role === "user"}>
                   <UserMessage
                     message={message as UserMessage}
-                    parts={Object.values(sync.data.part[route.sessionID]?.[message.id] ?? {})}
+                    parts={sync.data.part[message.id] ?? []}
                   />
                 </Match>
                 <Match when={message.role === "assistant"}>
                   <AssistantMessage
                     message={message as AssistantMessage}
-                    parts={Object.values(sync.data.part[route.sessionID]?.[message.id] ?? {})}
+                    parts={sync.data.part[message.id] ?? []}
                   />
                 </Match>
               </Switch>
@@ -133,7 +125,10 @@ function UserTextPart(props: { part: TextPart; message: UserMessage }) {
     >
       <text>{props.part.text.trim()}</text>
       <text>
-        {sync.data.config.username ?? "You"} {fg(Theme.textMuted)("(" + Locale.time(props.message.time.created) + ")")}
+        {sync.data.config.username ?? "You"}{" "}
+        {fg(Theme.textMuted)(
+          "(" + Locale.time(props.message.time.created) + ")",
+        )}
       </text>
     </box>
   )
@@ -158,7 +153,9 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[] }) {
 
 function TextPart(props: { part: TextPart; message: AssistantMessage }) {
   const sync = useSync()
-  const agent = createMemo(() => sync.data.agent.find((x) => x.name === props.message.mode)!)
+  const agent = createMemo(
+    () => sync.data.agent.find((x) => x.name === props.message.mode)!,
+  )
   const local = useLocal()
 
   return (
@@ -166,7 +163,9 @@ function TextPart(props: { part: TextPart; message: AssistantMessage }) {
       <text>{props.part.text.trim()}</text>
       <text>
         {fg(local.agent.color(agent().name))(Locale.titlecase(agent().name))}{" "}
-        {fg(Theme.textMuted)(props.message.providerID + "/" + props.message.modelID)}
+        {fg(Theme.textMuted)(
+          props.message.providerID + "/" + props.message.modelID,
+        )}
       </text>
     </box>
   )
@@ -191,15 +190,24 @@ function ToolPart(props: { part: ToolPart; message: AssistantMessage }) {
   const toolProps = createMemo(
     (): ToolProps<any> => ({
       input: "input" in props.part.state ? props.part.state.input : ({} as any),
-      metadata: "metadata" in props.part.state ? props.part.state.metadata : ({} as any),
-      output: "output" in props.part.state ? props.part.state.output : undefined,
+      metadata:
+        "metadata" in props.part.state
+          ? props.part.state.metadata
+          : ({} as any),
+      output:
+        "output" in props.part.state ? props.part.state.output : undefined,
     }),
   )
 
-
   return (
     <box {...SplitBorder} borderColor={Theme.backgroundPanel}>
-      <box paddingTop={1} paddingBottom={1} paddingLeft={2} backgroundColor={Theme.backgroundPanel} gap={1}>
+      <box
+        paddingTop={1}
+        paddingBottom={1}
+        paddingLeft={2}
+        backgroundColor={Theme.backgroundPanel}
+        gap={1}
+      >
         <Switch>
           <Match when={props.part.state.status === "pending"}>
             {PendingCopy[props.part.tool] ?? PendingCopy["default"]}
@@ -281,7 +289,12 @@ const syntax = new SyntaxStyle({
 
 function ReadToolPart(props: ToolProps<typeof ReadTool>) {
   const hast = createMemo(() =>
-    props.metadata["preview"] ? highlight.highlightHast(props.metadata["preview"], highlight.Language.TS) : "",
+    props.metadata["preview"]
+      ? highlight.highlightHast(
+        props.metadata["preview"],
+        highlight.Language.TS,
+      )
+      : "",
   )
   return (
     <>
@@ -295,7 +308,9 @@ function ReadToolPart(props: ToolProps<typeof ReadTool>) {
 
 function WriteToolPart(props: ToolProps<typeof WriteTool>) {
   const hast = createMemo(() =>
-    props.input.content ? highlight.highlightHast(props.input.content, highlight.Language.TS) : "",
+    props.input.content
+      ? highlight.highlightHast(props.input.content, highlight.Language.TS)
+      : "",
   )
   return (
     <>
