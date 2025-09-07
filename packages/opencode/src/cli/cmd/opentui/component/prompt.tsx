@@ -79,12 +79,17 @@ export function Prompt(props: PromptProps) {
               }}
               onSubmit={async (val) => {
                 if (autocomplete.visible) return
+                console.log("submitting")
                 input.value = ""
-                const sessionID = props.sessionID ? props.sessionID : await sdk.session.create({}).then((x) => x.data!.id)
-                route.navigate({
-                  type: "session",
-                  sessionID,
-                })
+                console.log({ sessionID: props.sessionID })
+                const sessionID = props.sessionID ? props.sessionID : await (async () => {
+                  const sessionID = await sdk.session.create({}).then((x) => x.data!.id)
+                  route.navigate({
+                    type: "session",
+                    sessionID,
+                  })
+                  return sessionID
+                })()
                 await sdk.session.prompt({
                   path: {
                     id: sessionID,

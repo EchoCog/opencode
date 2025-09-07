@@ -2,14 +2,8 @@ import { Installation } from "../../../installation";
 import { Theme } from "./context/theme";
 import { TextAttributes, bold, fg } from "@opentui/core"
 import { Prompt } from "./component/prompt";
-import { useSDK } from "./context/sdk";
-import { useRoute } from "./context/route";
-import { useLocal } from "./context/local";
 
 export function Home() {
-  const sdk = useSDK()
-  const route = useRoute()
-  const local = useLocal()
   return (
     <box flexGrow={1} justifyContent="center" alignItems="center">
       <box>

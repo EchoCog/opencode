@@ -11,17 +11,19 @@ export function DialogSessionList() {
 
   const options = createMemo(() => {
     const today = new Date().toDateString()
-    return Object.values(sync.data.session).map((x) => {
-      let category = new Date(x.time.created).toDateString()
-      if (category === today) {
-        category = "Today"
-      }
-      return {
-        title: x.title,
-        value: x.id,
-        category,
-      }
-    })
+    return Object.values(sync.data.session)
+      .toSorted((a, b) => a.id.localeCompare(b.id))
+      .map((x) => {
+        let category = new Date(x.time.created).toDateString()
+        if (category === today) {
+          category = "Today"
+        }
+        return {
+          title: x.title,
+          value: x.id,
+          category,
+        }
+      })
   })
 
   onMount(() => {

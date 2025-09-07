@@ -12,7 +12,7 @@ type Route =
 
 function init() {
   const [store, setStore] = createStore<Route>(
-    { type: "home" }
+    { type: "session", sessionID: "ses_6dd0886fbffeXLT6AlJJdkaL0C" }
   )
 
   return {
