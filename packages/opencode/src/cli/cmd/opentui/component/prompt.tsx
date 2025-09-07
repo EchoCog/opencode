@@ -107,6 +107,7 @@ export function Prompt(props: PromptProps) {
               onKeyDown={(e) => {
                 autocomplete.onKeyDown(e)
                 const old = input.cursorPosition
+                const isBackspace = e.name === "backspace"
                 setTimeout(() => {
                   const position = input.cursorPosition
                   const direction = Math.sign(old - position)
@@ -119,10 +120,15 @@ export function Prompt(props: PromptProps) {
                         end: part.source.text.end,
                       })
                       if (
-                        part.source.text.start <= position &&
-                        position <= part.source.text.end
+                        position >= part.source.text.start &&
+                        position < part.source.text.end
                       ) {
-                        input.cursorPosition = part.source.text.start
+                        if (direction === 1) {
+                          input.cursorPosition = Math.max(0, part.source.text.start - 1)
+                        }
+                        if (direction === -1) {
+                          input.cursorPosition = part.source.text.end
+                        }
                       }
                     }
                   }
@@ -133,15 +139,15 @@ export function Prompt(props: PromptProps) {
                 const sessionID = props.sessionID
                   ? props.sessionID
                   : await (async () => {
-                      const sessionID = await sdk.session
-                        .create({})
-                        .then((x) => x.data!.id)
-                      route.navigate({
-                        type: "session",
-                        sessionID,
-                      })
-                      return sessionID
-                    })()
+                    const sessionID = await sdk.session
+                      .create({})
+                      .then((x) => x.data!.id)
+                    route.navigate({
+                      type: "session",
+                      sessionID,
+                    })
+                    return sessionID
+                  })()
                 const messageID = Identifier.ascending("message")
                 const input = store.input
                 const parts = store.parts
@@ -310,14 +316,14 @@ function Autocomplete(props: {
                 type: "file",
                 text: {
                   start: store.index,
-                  end: store.index + file.length,
+                  end: store.index + file.length + 1,
                   value: file,
                 },
                 path: file,
               },
             }
             props.setPrompt((draft) => {
-              const append = file + " "
+              const append = "@" + file + " "
               if (store.index === 0) draft.input = append
               if (store.index > 0)
                 draft.input = draft.input.slice(0, store.index) + append

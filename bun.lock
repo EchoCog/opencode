@@ -15,7 +15,7 @@
       "name": "@opencode/cloud-app",
       "dependencies": {
         "@ibm/plex": "6.4.1",
-        "@openauthjs/openauth": "0.0.0-20250322224806",
+        "@openauthjs/openauth": "catalog:",
         "@opencode/cloud-core": "workspace:*",
         "@solidjs/meta": "^0.29.4",
         "@solidjs/router": "^0.15.0",
@@ -26,7 +26,7 @@
     },
     "cloud/core": {
       "name": "@opencode/cloud-core",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@aws-sdk/client-sts": "3.782.0",
         "@opencode/cloud-resource": "workspace:*",
@@ -34,7 +34,7 @@
         "drizzle-orm": "0.41.0",
         "postgres": "3.4.7",
         "stripe": "18.0.0",
-        "ulid": "3.0.0",
+        "ulid": "catalog:",
       },
       "devDependencies": {
         "drizzle-kit": "0.30.5",
@@ -43,7 +43,7 @@
     },
     "cloud/function": {
       "name": "@opencode/cloud-function",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@ai-sdk/anthropic": "2.0.0",
         "@ai-sdk/openai": "2.0.2",
@@ -69,7 +69,7 @@
     },
     "cloud/scripts": {
       "name": "@opencode/cloud-scripts",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@opencode/cloud-core": "workspace:*",
         "tsx": "4.20.5",
@@ -81,7 +81,7 @@
     },
     "packages/function": {
       "name": "@opencode/function",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@octokit/auth-app": "8.0.1",
         "@octokit/rest": "22.0.0",
@@ -104,7 +104,7 @@
         "@clack/prompts": "1.0.0-alpha.1",
         "@hono/zod-validator": "catalog:",
         "@modelcontextprotocol/sdk": "1.15.1",
-        "@openauthjs/openauth": "0.4.3",
+        "@openauthjs/openauth": "catalog:",
         "@opencode-ai/plugin": "workspace:*",
         "@opencode-ai/sdk": "workspace:*",
         "@opentui/core": "0.1.18",
@@ -129,7 +129,7 @@
         "tree-sitter-highlight": "1.0.1",
         "tree-sitter-typescript": "0.23.2",
         "turndown": "7.2.0",
-        "ulid": "3.0.1",
+        "ulid": "catalog:",
         "vscode-jsonrpc": "8.2.1",
         "web-tree-sitter": "0.22.6",
         "xdg-basedir": "5.1.0",
@@ -152,7 +152,7 @@
     },
     "packages/plugin": {
       "name": "@opencode-ai/plugin",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@opencode-ai/sdk": "workspace:*",
       },
@@ -163,7 +163,7 @@
     },
     "packages/sdk/js": {
       "name": "@opencode-ai/sdk",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@hey-api/openapi-ts": "0.82.3",
       },
@@ -174,7 +174,7 @@
     },
     "packages/web": {
       "name": "@opencode/web",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@astrojs/cloudflare": "12.6.3",
         "@astrojs/markdown-remark": "6.3.1",
@@ -221,6 +221,7 @@
   },
   "catalog": {
     "@hono/zod-validator": "0.4.2",
+    "@openauthjs/openauth": "0.0.0-20250322224806",
     "@tsconfig/node22": "22.0.2",
     "@types/node": "22.13.9",
     "ai": "5.0.8",
@@ -228,6 +229,7 @@
     "remeda": "2.26.0",
     "solid-js": "1.9.9",
     "typescript": "5.8.2",
+    "ulid": "3.0.1",
     "zod": "3.25.76",
   },
   "packages": {
@@ -2753,7 +2755,7 @@
 
     "uglify-js": ["uglify-js@3.19.3", "", { "bin": { "uglifyjs": "bin/uglifyjs" } }, "sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ=="],
 
-    "ulid": ["ulid@3.0.0", "", { "bin": { "ulid": "dist/cli.js" } }, "sha512-yvZYdXInnJve6LdlPIuYmURdS2NP41ZoF4QW7SXwbUKYt53+0eDAySO+rGSvM2O/ciuB/G+8N7GQrZ1mCJpuqw=="],
+    "ulid": ["ulid@3.0.1", "", { "bin": { "ulid": "dist/cli.js" } }, "sha512-dPJyqPzx8preQhqq24bBG1YNkvigm87K8kVEHCD+ruZg24t6IFEFv00xMWfxcC4djmFtiTLdFuADn4+DOz6R7Q=="],
 
     "ultrahtml": ["ultrahtml@1.6.0", "", {}, "sha512-R9fBn90VTJrqqLDwyMph+HGne8eqY1iPfYhPzZrvKpIfwkWZbcYlfpsb8B9dTvBfpy1/hqAD7Wi8EKfP9e8zdw=="],
 
@@ -3203,10 +3205,6 @@
 
     "nypm/pathe": ["pathe@2.0.3", "", {}, "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w=="],
 
-    "opencode/@openauthjs/openauth": ["@openauthjs/openauth@0.4.3", "", { "dependencies": { "@standard-schema/spec": "1.0.0-beta.3", "aws4fetch": "1.0.20", "jose": "5.9.6" }, "peerDependencies": { "arctic": "^2.2.2", "hono": "^4.0.0" } }, "sha512-RlnjqvHzqcbFVymEwhlUEuac4utA5h4nhSK/i2szZuQmxTIqbGUxZ+nM+avM+VV4Ing+/ZaNLKILoXS3yrkOOw=="],
-
-    "opencode/ulid": ["ulid@3.0.1", "", { "bin": { "ulid": "dist/cli.js" } }, "sha512-dPJyqPzx8preQhqq24bBG1YNkvigm87K8kVEHCD+ruZg24t6IFEFv00xMWfxcC4djmFtiTLdFuADn4+DOz6R7Q=="],
-
     "opencontrol/@modelcontextprotocol/sdk": ["@modelcontextprotocol/sdk@1.6.1", "", { "dependencies": { "content-type": "^1.0.5", "cors": "^2.8.5", "eventsource": "^3.0.2", "express": "^5.0.1", "express-rate-limit": "^7.5.0", "pkce-challenge": "^4.1.0", "raw-body": "^3.0.0", "zod": "^3.23.8", "zod-to-json-schema": "^3.24.1" } }, "sha512-oxzMzYCkZHMntzuyerehK3fV6A2Kwh5BD6CGEJSVDU2QNEhfLOptf2X7esQgaHZXHZY0oHmMsOtIDLP71UJXgA=="],
 
     "opencontrol/hono": ["hono@4.7.4", "", {}, "sha512-Pst8FuGqz3L7tFF+u9Pu70eI0xa5S3LPUmrNd5Jm8nTHze9FxLTK9Kaj5g/k4UcwuJSXTP65SyHOPLrffpcAJg=="],
@@ -3542,12 +3540,6 @@
     "node-gyp/glob/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "node-gyp/glob/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
-
-    "opencode/@openauthjs/openauth/@standard-schema/spec": ["@standard-schema/spec@1.0.0-beta.3", "", {}, "sha512-0ifF3BjA1E8SY9C+nUew8RefNOIq0cDlYALPty4rhUm8Rrl6tCM8hBT4bhGhx7I7iXD0uAgt50lgo8dD73ACMw=="],
-
-    "opencode/@openauthjs/openauth/aws4fetch": ["aws4fetch@1.0.20", "", {}, "sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g=="],
-
-    "opencode/@openauthjs/openauth/jose": ["jose@5.9.6", "", {}, "sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ=="],
 
     "opencontrol/@modelcontextprotocol/sdk/pkce-challenge": ["pkce-challenge@4.1.0", "", {}, "sha512-ZBmhE1C9LcPoH9XZSdwiPtbPHZROwAnMy+kIFQVrnMCxY4Cudlz3gBOpzilgc0jOgRaiT3sIWfpMomW2ar2orQ=="],
 
