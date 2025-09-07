@@ -527,6 +527,38 @@ export namespace Session {
               if (part.mime === "text/plain") {
                 let offset: number | undefined = undefined
                 let limit: number | undefined = undefined
+                const range = {
+                  start: url.searchParams.get("start"),
+                  end: url.searchParams.get("end"),
+                }
+                if (range.start != null) {
+                  const filePath = part.url.split("?")[0]
+                  let start = parseInt(range.start)
+                  let end = range.end ? parseInt(range.end) : undefined
+                  // some LSP servers (eg, gopls) don't give full range in
+                  // workspace/symbol searches, so we'll try to find the
+                  // symbol in the document to get the full range
+                  if (start === end) {
+                    const symbols = await LSP.documentSymbol(filePath)
+                    for (const symbol of symbols) {
+                      let range: LSP.Range | undefined
+                      if ("range" in symbol) {
+                        range = symbol.range
+                      } else if ("location" in symbol) {
+                        range = symbol.location.range
+                      }
+                      if (range?.start?.line && range?.start?.line === start) {
+                        start = range.start.line
+                        end = range?.end?.line ?? start
+                        break
+                      }
+                    }
+                  }
+                  offset = Math.max(start - 1, 0)
+                  if (end) {
+                    limit = end - offset
+                  }
+                }
                 const args = { filePath, offset, limit }
                 const result = await ReadTool.init().then((t) =>
                   t.execute(args, {
@@ -693,29 +725,29 @@ export namespace Session {
     }
     using abort = lock(input.sessionID)
 
-    const lastSummary = msgs.findLast(
-      (msg) => msg.info.role === "assistant" && msg.info.summary === true,
-    )
-    if (lastSummary)
-      msgs = msgs.filter((msg) => msg.info.id >= lastSummary.info.id)
-
-    if (
-      msgs.filter((m) => m.info.role === "user").length === 1 &&
-      !session.parentID &&
-      isDefaultTitle(session.title)
-    ) {
+    const lastSummary = msgs.findLast((msg) => msg.info.role === "assistant" && msg.info.summary === true)
+    if (lastSummary) msgs = msgs.filter((msg) => msg.info.id >= lastSummary.info.id)
+    const numRealUserMsgs = msgs.filter(
+      (m) => m.info.role === "user" && !m.parts.every((p) => "synthetic" in p && p.synthetic),
+    ).length
+    if (numRealUserMsgs === 1 && !session.parentID && isDefaultTitle(session.title)) {
       const small = (await Provider.getSmallModel(model.providerID)) ?? model
+      const options = {
+        ...ProviderTransform.options(small.providerID, small.modelID, input.sessionID),
+        ...small.info.options,
+      }
+      if (small.providerID === "openai") {
+        options["reasoningEffort"] = "minimal"
+      }
+      if (small.providerID === "google") {
+        options["thinkingConfig"] = {
+          thinkingBudget: 0,
+        }
+      }
       generateText({
-        maxOutputTokens: small.info.reasoning ? 1024 : 20,
+        maxOutputTokens: small.info.reasoning ? 1500 : 20,
         providerOptions: {
-          [model.providerID]: {
-            ...small.info.options,
-            ...ProviderTransform.options(
-              small.providerID,
-              small.modelID,
-              input.sessionID,
-            ),
-          },
+          [model.providerID]: options,
         },
         messages: [
           ...SystemPrompt.title(model.providerID).map(
@@ -1052,7 +1084,7 @@ export namespace Session {
           : undefined,
       maxRetries: 3,
       activeTools: Object.keys(tools).filter((x) => x !== "invalid"),
-      maxOutputTokens: outputLimit,
+      maxOutputTokens: ProviderTransform.maxOutputTokens(model.providerID, outputLimit, params.options),
       abortSignal: abort.signal,
       stopWhen: async ({ steps }) => {
         if (steps.length >= 1000) {
@@ -1347,18 +1379,26 @@ export namespace Session {
       }),
     )
 
+    const model = await (async () => {
+      if (command.model) {
+        return Provider.parseModel(command.model)
+      }
+      if (command.agent) {
+        const agent = await Agent.get(command.agent)
+        if (agent.model) {
+          return agent.model
+        }
+      }
+      if (input.model) {
+        return Provider.parseModel(input.model)
+      }
+      return undefined
+    })()
+
     return prompt({
       sessionID: input.sessionID,
       messageID: input.messageID,
-      model: (() => {
-        if (input.model) {
-          return Provider.parseModel(input.model)
-        }
-        if (command.model) {
-          return Provider.parseModel(command.model)
-        }
-        return undefined
-      })(),
+      model,
       agent,
       parts,
     })
