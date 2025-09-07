@@ -40,7 +40,12 @@ if (version !== CACHE_VERSION) {
   try {
     const contents = await fs.readdir(Global.Path.cache)
     await Promise.all(
-      contents.map((item) => fs.rm(path.join(Global.Path.cache, item), { recursive: true, force: true })),
+      contents.map((item) =>
+        fs.rm(path.join(Global.Path.cache, item), {
+          recursive: true,
+          force: true,
+        }),
+      ),
     )
   } catch (e) {}
   await Bun.file(path.join(Global.Path.cache, "version")).write(CACHE_VERSION)

@@ -26,7 +26,11 @@ export namespace Filesystem {
     return result
   }
 
-  export async function* up(options: { targets: string[]; start: string; stop?: string }) {
+  export async function* up(options: {
+    targets: string[]
+    start: string
+    stop?: string
+  }) {
     const { targets, start, stop } = options
     let current = start
     while (true) {

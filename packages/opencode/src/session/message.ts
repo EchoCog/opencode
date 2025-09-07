@@ -2,7 +2,10 @@ import z from "zod"
 import { NamedError } from "../util/error"
 
 export namespace Message {
-  export const OutputLengthError = NamedError.create("MessageOutputLengthError", z.object({}))
+  export const OutputLengthError = NamedError.create(
+    "MessageOutputLengthError",
+    z.object({}),
+  )
   export const AuthError = NamedError.create(
     "ProviderAuthError",
     z.object({
@@ -51,9 +54,11 @@ export namespace Message {
     })
   export type ToolResult = z.infer<typeof ToolResult>
 
-  export const ToolInvocation = z.discriminatedUnion("state", [ToolCall, ToolPartialCall, ToolResult]).openapi({
-    ref: "ToolInvocation",
-  })
+  export const ToolInvocation = z
+    .discriminatedUnion("state", [ToolCall, ToolPartialCall, ToolResult])
+    .openapi({
+      ref: "ToolInvocation",
+    })
   export type ToolInvocation = z.infer<typeof ToolInvocation>
 
   export const TextPart = z
@@ -122,7 +127,14 @@ export namespace Message {
   export type StepStartPart = z.infer<typeof StepStartPart>
 
   export const MessagePart = z
-    .discriminatedUnion("type", [TextPart, ReasoningPart, ToolInvocationPart, SourceUrlPart, FilePart, StepStartPart])
+    .discriminatedUnion("type", [
+      TextPart,
+      ReasoningPart,
+      ToolInvocationPart,
+      SourceUrlPart,
+      FilePart,
+      StepStartPart,
+    ])
     .openapi({
       ref: "MessagePart",
     })
@@ -140,7 +152,11 @@ export namespace Message {
             completed: z.number().optional(),
           }),
           error: z
-            .discriminatedUnion("name", [AuthError.Schema, NamedError.Unknown.Schema, OutputLengthError.Schema])
+            .discriminatedUnion("name", [
+              AuthError.Schema,
+              NamedError.Unknown.Schema,
+              OutputLengthError.Schema,
+            ])
             .optional(),
           sessionID: z.string(),
           tool: z.record(

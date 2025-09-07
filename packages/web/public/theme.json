@@ -88,7 +88,14 @@
         "syntaxOperator": { "$ref": "#/definitions/colorValue" },
         "syntaxPunctuation": { "$ref": "#/definitions/colorValue" }
       },
-      "required": ["primary", "secondary", "accent", "text", "textMuted", "background"],
+      "required": [
+        "primary",
+        "secondary",
+        "accent",
+        "text",
+        "textMuted",
+        "background"
+      ],
       "additionalProperties": false
     }
   },

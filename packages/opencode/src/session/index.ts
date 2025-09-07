@@ -62,7 +62,10 @@ export namespace Session {
   const childSessionTitlePrefix = "Child session - "
 
   function createDefaultTitle(isChild = false) {
-    return (isChild ? childSessionTitlePrefix : parentSessionTitlePrefix) + new Date().toISOString()
+    return (
+      (isChild ? childSessionTitlePrefix : parentSessionTitlePrefix) +
+      new Date().toISOString()
+    )
   }
 
   function isDefaultTitle(title: string) {
@@ -149,7 +152,10 @@ export namespace Session {
           message: MessageV2.User
           parts: MessageV2.Part[]
           processed: boolean
-          callback: (input: { info: MessageV2.Assistant; parts: MessageV2.Part[] }) => void
+          callback: (input: {
+            info: MessageV2.Assistant
+            parts: MessageV2.Part[]
+          }) => void
         }[]
       >()
 
@@ -174,7 +180,12 @@ export namespace Session {
     })
   }
 
-  export async function createNext(input: { id?: string; title?: string; parentID?: string; directory: string }) {
+  export async function createNext(input: {
+    id?: string
+    title?: string
+    parentID?: string
+    directory: string
+  }) {
     const result: Info = {
       id: Identifier.descending("session", input.id),
       version: Installation.VERSION,
@@ -234,7 +245,10 @@ export namespace Session {
     for (const msg of await messages(id)) {
       await Share.sync("session/message/" + id + "/" + msg.info.id, msg.info)
       for (const part of msg.parts) {
-        await Share.sync("session/part/" + id + "/" + msg.info.id + "/" + part.id, part)
+        await Share.sync(
+          "session/part/" + id + "/" + msg.info.id + "/" + part.id,
+          part,
+        )
       }
     }
     return share
@@ -252,10 +266,13 @@ export namespace Session {
 
   export async function update(id: string, editor: (session: Info) => void) {
     const project = Instance.project
-    const result = await Storage.update<Info>(["session", project.id, id], (draft) => {
-      editor(draft)
-      draft.time.updated = Date.now()
-    })
+    const result = await Storage.update<Info>(
+      ["session", project.id, id],
+      (draft) => {
+        editor(draft)
+        draft.time.updated = Date.now()
+      },
+    )
     Bus.publish(Event.Updated, {
       info: result,
     })
@@ -280,7 +297,11 @@ export namespace Session {
 
   export async function getMessage(sessionID: string, messageID: string) {
     return {
-      info: await Storage.read<MessageV2.Info>(["message", sessionID, messageID]),
+      info: await Storage.read<MessageV2.Info>([
+        "message",
+        sessionID,
+        messageID,
+      ]),
       parts: await getParts(messageID),
     }
   }
@@ -431,12 +452,18 @@ export namespace Session {
       msgs = preserve
       for (const msg of remove) {
         await Storage.remove(["message", input.sessionID, msg.info.id])
-        await Bus.publish(MessageV2.Event.Removed, { sessionID: input.sessionID, messageID: msg.info.id })
+        await Bus.publish(MessageV2.Event.Removed, {
+          sessionID: input.sessionID,
+          messageID: msg.info.id,
+        })
       }
       const last = preserve.at(-1)
       if (session.revert.partID && last) {
         const partID = session.revert.partID
-        const [preserveParts, removeParts] = splitWhen(last.parts, (x) => x.id === partID)
+        const [preserveParts, removeParts] = splitWhen(
+          last.parts,
+          (x) => x.id === partID,
+        )
         last.parts = preserveParts
         for (const part of removeParts) {
           await Storage.remove(["part", last.info.id, part.id])
@@ -586,7 +613,9 @@ export namespace Session {
                   messageID: userMsg.id,
                   sessionID: input.sessionID,
                   type: "file",
-                  url: `data:${part.mime};base64,` + Buffer.from(await file.bytes()).toString("base64"),
+                  url:
+                    `data:${part.mime};base64,` +
+                    Buffer.from(await file.bytes()).toString("base64"),
                   mime: part.mime,
                   filename: part.filename!,
                   source: part.source,
@@ -669,14 +698,22 @@ export namespace Session {
     })().then((x) => Provider.getModel(x.providerID, x.modelID))
     let msgs = await messages(input.sessionID)
 
-    const previous = msgs.filter((x) => x.info.role === "assistant").at(-1)?.info as MessageV2.Assistant
-    const outputLimit = Math.min(model.info.limit.output, OUTPUT_TOKEN_MAX) || OUTPUT_TOKEN_MAX
+    const previous = msgs.filter((x) => x.info.role === "assistant").at(-1)
+      ?.info as MessageV2.Assistant
+    const outputLimit =
+      Math.min(model.info.limit.output, OUTPUT_TOKEN_MAX) || OUTPUT_TOKEN_MAX
 
     // auto summarize if too long
     if (previous && previous.tokens) {
       const tokens =
-        previous.tokens.input + previous.tokens.cache.read + previous.tokens.cache.write + previous.tokens.output
-      if (model.info.limit.context && tokens > Math.max((model.info.limit.context - outputLimit) * 0.9, 0)) {
+        previous.tokens.input +
+        previous.tokens.cache.read +
+        previous.tokens.cache.write +
+        previous.tokens.output
+      if (
+        model.info.limit.context &&
+        tokens > Math.max((model.info.limit.context - outputLimit) * 0.9, 0)
+      ) {
         state().autoCompacting.set(input.sessionID, true)
 
         await summarize({
@@ -689,17 +726,28 @@ export namespace Session {
     }
     using abort = lock(input.sessionID)
 
-    const lastSummary = msgs.findLast((msg) => msg.info.role === "assistant" && msg.info.summary === true)
-    if (lastSummary) msgs = msgs.filter((msg) => msg.info.id >= lastSummary.info.id)
+    const lastSummary = msgs.findLast(
+      (msg) => msg.info.role === "assistant" && msg.info.summary === true,
+    )
+    if (lastSummary)
+      msgs = msgs.filter((msg) => msg.info.id >= lastSummary.info.id)
 
-    if (msgs.filter((m) => m.info.role === "user").length === 1 && !session.parentID && isDefaultTitle(session.title)) {
+    if (
+      msgs.filter((m) => m.info.role === "user").length === 1 &&
+      !session.parentID &&
+      isDefaultTitle(session.title)
+    ) {
       const small = (await Provider.getSmallModel(model.providerID)) ?? model
       generateText({
         maxOutputTokens: small.info.reasoning ? 1024 : 20,
         providerOptions: {
           [model.providerID]: {
             ...small.info.options,
-            ...ProviderTransform.options(small.providerID, small.modelID, input.sessionID),
+            ...ProviderTransform.options(
+              small.providerID,
+              small.modelID,
+              input.sessionID,
+            ),
           },
         },
         messages: [
@@ -728,8 +776,14 @@ export namespace Session {
         .then((result) => {
           if (result.text)
             return Session.update(input.sessionID, (draft) => {
-              const cleaned = result.text.replace(/<think>[\s\S]*?<\/think>\s*/g, "")
-              const title = cleaned.length > 100 ? cleaned.substring(0, 97) + "..." : cleaned
+              const cleaned = result.text.replace(
+                /<think>[\s\S]*?<\/think>\s*/g,
+                "",
+              )
+              const title =
+                cleaned.length > 100
+                  ? cleaned.substring(0, 97) + "..."
+                  : cleaned
               draft.title = title.trim()
             })
         })
@@ -749,7 +803,9 @@ export namespace Session {
       })
     }
 
-    const lastAssistantMsg = msgs.filter((x) => x.info.role === "assistant").at(-1)?.info as MessageV2.Assistant
+    const lastAssistantMsg = msgs
+      .filter((x) => x.info.role === "assistant")
+      .at(-1)?.info as MessageV2.Assistant
     if (lastAssistantMsg?.mode === "plan" && agent.name === "build") {
       msgs.at(-1)?.parts.push({
         id: Identifier.ascending("part"),
@@ -800,8 +856,16 @@ export namespace Session {
     await updateMessage(assistantMsg)
     await using _ = defer(async () => {
       if (assistantMsg.time.completed) return
-      await Storage.remove(["session", "message", input.sessionID, assistantMsg.id])
-      await Bus.publish(MessageV2.Event.Removed, { sessionID: input.sessionID, messageID: assistantMsg.id })
+      await Storage.remove([
+        "session",
+        "message",
+        input.sessionID,
+        assistantMsg.id,
+      ])
+      await Bus.publish(MessageV2.Event.Removed, {
+        sessionID: input.sessionID,
+        messageID: assistantMsg.id,
+      })
     })
     const tools: Record<string, AITool> = {}
 
@@ -809,10 +873,15 @@ export namespace Session {
 
     const enabledTools = pipe(
       agent.tools,
-      mergeDeep(await ToolRegistry.enabled(model.providerID, model.modelID, agent)),
+      mergeDeep(
+        await ToolRegistry.enabled(model.providerID, model.modelID, agent),
+      ),
       mergeDeep(input.tools ?? {}),
     )
-    for (const item of await ToolRegistry.tools(model.providerID, model.modelID)) {
+    for (const item of await ToolRegistry.tools(
+      model.providerID,
+      model.modelID,
+    )) {
       if (Wildcard.all(item.id, enabledTools) === false) continue
       tools[item.id] = tool({
         id: item.id as any,
@@ -927,11 +996,17 @@ export namespace Session {
       },
       {
         temperature: model.info.temperature
-          ? (agent.temperature ?? ProviderTransform.temperature(model.providerID, model.modelID))
+          ? (agent.temperature ??
+            ProviderTransform.temperature(model.providerID, model.modelID))
           : undefined,
-        topP: agent.topP ?? ProviderTransform.topP(model.providerID, model.modelID),
+        topP:
+          agent.topP ?? ProviderTransform.topP(model.providerID, model.modelID),
         options: {
-          ...ProviderTransform.options(model.providerID, model.modelID, input.sessionID),
+          ...ProviderTransform.options(
+            model.providerID,
+            model.modelID,
+            input.sessionID,
+          ),
           ...model.info.options,
           ...agent.options,
         },
@@ -944,7 +1019,9 @@ export namespace Session {
         })
       },
       async prepareStep({ messages }) {
-        const queue = (state().queued.get(input.sessionID) ?? []).filter((x) => !x.processed)
+        const queue = (state().queued.get(input.sessionID) ?? []).filter(
+          (x) => !x.processed,
+        )
         if (queue.length) {
           for (const item of queue) {
             if (item.processed) continue
@@ -1034,7 +1111,9 @@ export namespace Session {
             content: x,
           }),
         ),
-        ...MessageV2.toModelMessage(msgs.filter((m) => !(m.info.role === "assistant" && m.info.error))),
+        ...MessageV2.toModelMessage(
+          msgs.filter((m) => !(m.info.role === "assistant" && m.info.error)),
+        ),
       ],
       tools: model.info.tool_call === false ? undefined : tools,
       model: wrapLanguageModel({
@@ -1044,7 +1123,11 @@ export namespace Session {
             async transformParams(args) {
               if (args.type === "stream") {
                 // @ts-expect-error
-                args.params.prompt = ProviderTransform.message(args.params.prompt, model.providerID, model.modelID)
+                args.params.prompt = ProviderTransform.message(
+                  args.params.prompt,
+                  model.providerID,
+                  model.modelID,
+                )
               }
               return args.params
             },
@@ -1314,7 +1397,10 @@ export namespace Session {
     })
   }
 
-  function createProcessor(assistantMsg: MessageV2.Assistant, model: ModelsDev.Model) {
+  function createProcessor(
+    assistantMsg: MessageV2.Assistant,
+    model: ModelsDev.Model,
+  ) {
     const toolcalls: Record<string, MessageV2.ToolPart> = {}
     let snapshot: string | undefined
     let shouldStop = false
@@ -1449,7 +1535,10 @@ export namespace Session {
                       status: "error",
                       input: value.input,
                       error: (value.error as any).toString(),
-                      metadata: value.error instanceof Permission.RejectedError ? value.error.metadata : undefined,
+                      metadata:
+                        value.error instanceof Permission.RejectedError
+                          ? value.error.metadata
+                          : undefined,
                       time: {
                         start: match.state.time.start,
                         end: Date.now(),
@@ -1474,7 +1563,11 @@ export namespace Session {
                 break
 
               case "finish-step":
-                const usage = getUsage(model, value.usage, value.providerMetadata)
+                const usage = getUsage(
+                  model,
+                  value.usage,
+                  value.providerMetadata,
+                )
                 assistantMsg.cost += usage.cost
                 assistantMsg.tokens = usage.tokens
                 await updatePart({
@@ -1572,10 +1665,16 @@ export namespace Session {
               ).toObject()
               break
             case e instanceof Error:
-              assistantMsg.error = new NamedError.Unknown({ message: e.toString() }, { cause: e }).toObject()
+              assistantMsg.error = new NamedError.Unknown(
+                { message: e.toString() },
+                { cause: e },
+              ).toObject()
               break
             default:
-              assistantMsg.error = new NamedError.Unknown({ message: JSON.stringify(e) }, { cause: e })
+              assistantMsg.error = new NamedError.Unknown(
+                { message: JSON.stringify(e) },
+                { cause: e },
+              )
           }
           Bus.publish(Event.Error, {
             sessionID: assistantMsg.sessionID,
@@ -1584,7 +1683,11 @@ export namespace Session {
         }
         const p = await getParts(assistantMsg.id)
         for (const part of p) {
-          if (part.type === "tool" && part.state.status !== "completed" && part.state.status !== "error") {
+          if (
+            part.type === "tool" &&
+            part.state.status !== "completed" &&
+            part.state.status !== "error"
+          ) {
             updatePart({
               ...part,
               state: {
@@ -1632,9 +1735,16 @@ export namespace Session {
         }
 
         if (!revert) {
-          if ((msg.info.id === input.messageID && !input.partID) || part.id === input.partID) {
+          if (
+            (msg.info.id === input.messageID && !input.partID) ||
+            part.id === input.partID
+          ) {
             // if no useful parts left in message, same as reverting whole message
-            const partID = remaining.some((item) => ["text", "tool"].includes(item.type)) ? input.partID : undefined
+            const partID = remaining.some((item) =>
+              ["text", "tool"].includes(item.type),
+            )
+              ? input.partID
+              : undefined
             revert = {
               messageID: !partID && lastUser ? lastUser.id : msg.info.id,
               partID,
@@ -1668,11 +1778,19 @@ export namespace Session {
     return next
   }
 
-  export async function summarize(input: { sessionID: string; providerID: string; modelID: string }) {
+  export async function summarize(input: {
+    sessionID: string
+    providerID: string
+    modelID: string
+  }) {
     using abort = lock(input.sessionID)
     const msgs = await messages(input.sessionID)
-    const lastSummary = msgs.findLast((msg) => msg.info.role === "assistant" && msg.info.summary === true)
-    const filtered = msgs.filter((msg) => !lastSummary || msg.info.id >= lastSummary.info.id)
+    const lastSummary = msgs.findLast(
+      (msg) => msg.info.role === "assistant" && msg.info.summary === true,
+    )
+    const filtered = msgs.filter(
+      (msg) => !lastSummary || msg.info.id >= lastSummary.info.id,
+    )
     const model = await Provider.getModel(input.providerID, input.modelID)
     const system = [
       ...SystemPrompt.summarize(model.providerID),
@@ -1766,7 +1884,11 @@ export namespace Session {
     }
   }
 
-  function getUsage(model: ModelsDev.Model, usage: LanguageModelUsage, metadata?: ProviderMetadata) {
+  function getUsage(
+    model: ModelsDev.Model,
+    usage: LanguageModelUsage,
+    metadata?: ProviderMetadata,
+  ) {
     const tokens = {
       input: usage.inputTokens ?? 0,
       output: usage.outputTokens ?? 0,
@@ -1781,10 +1903,24 @@ export namespace Session {
     }
     return {
       cost: new Decimal(0)
-        .add(new Decimal(tokens.input).mul(model.cost?.input ?? 0).div(1_000_000))
-        .add(new Decimal(tokens.output).mul(model.cost?.output ?? 0).div(1_000_000))
-        .add(new Decimal(tokens.cache.read).mul(model.cost?.cache_read ?? 0).div(1_000_000))
-        .add(new Decimal(tokens.cache.write).mul(model.cost?.cache_write ?? 0).div(1_000_000))
+        .add(
+          new Decimal(tokens.input).mul(model.cost?.input ?? 0).div(1_000_000),
+        )
+        .add(
+          new Decimal(tokens.output)
+            .mul(model.cost?.output ?? 0)
+            .div(1_000_000),
+        )
+        .add(
+          new Decimal(tokens.cache.read)
+            .mul(model.cost?.cache_read ?? 0)
+            .div(1_000_000),
+        )
+        .add(
+          new Decimal(tokens.cache.write)
+            .mul(model.cost?.cache_write ?? 0)
+            .div(1_000_000),
+        )
         .toNumber(),
       tokens,
     }

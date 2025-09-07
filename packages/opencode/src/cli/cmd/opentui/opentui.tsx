@@ -1,5 +1,10 @@
 import { cmd } from "../cmd"
-import { render, useKeyHandler, useRenderer, useTerminalDimensions } from "@opentui/solid"
+import {
+  render,
+  useKeyHandler,
+  useRenderer,
+  useTerminalDimensions,
+} from "@opentui/solid"
 import { bold, TextAttributes } from "@opentui/core"
 import { RouteProvider, useRoute } from "./context/route"
 import { Home } from "./home"
@@ -21,22 +26,25 @@ export const OpentuiCommand = cmd({
   describe: "print hello",
   handler: async () => {
     await bootstrap(process.cwd(), async () => {
-      await render(() => (
-        <RouteProvider>
-          <SDKProvider>
-            <SyncProvider>
-              <LocalProvider>
-                <DialogProvider>
-                  <App />
-                </DialogProvider>
-              </LocalProvider>
-            </SyncProvider>
-          </SDKProvider>
-        </RouteProvider>
-      ), {
-        targetFps: 60,
-        gatherStats: false,
-      })
+      await render(
+        () => (
+          <RouteProvider>
+            <SDKProvider>
+              <SyncProvider>
+                <LocalProvider>
+                  <DialogProvider>
+                    <App />
+                  </DialogProvider>
+                </LocalProvider>
+              </SyncProvider>
+            </SDKProvider>
+          </RouteProvider>
+        ),
+        {
+          targetFps: 60,
+          gatherStats: false,
+        },
+      )
     })
   },
 })
@@ -47,7 +55,6 @@ function App() {
   const renderer = useRenderer()
   const dialog = useDialog()
   const local = useLocal()
-
 
   useKeyHandler(async (evt) => {
     if (evt.name === "tab") {
@@ -76,7 +83,11 @@ function App() {
   })
 
   return (
-    <box width={dimensions().width} height={dimensions().height} backgroundColor={Theme.background}>
+    <box
+      width={dimensions().width}
+      height={dimensions().height}
+      backgroundColor={Theme.background}
+    >
       <box flexDirection="column" flexGrow={1}>
         <Switch>
           <Match when={route.data.type === "session"}>
@@ -87,21 +98,41 @@ function App() {
           </Match>
         </Switch>
       </box>
-      <box height={1} backgroundColor={Theme.backgroundPanel} flexDirection="row" justifyContent="space-between">
+      <box
+        height={1}
+        backgroundColor={Theme.backgroundPanel}
+        flexDirection="row"
+        justifyContent="space-between"
+      >
         <box flexDirection="row">
-          <box flexDirection="row" backgroundColor={Theme.backgroundElement} paddingLeft={1} paddingRight={1}>
+          <box
+            flexDirection="row"
+            backgroundColor={Theme.backgroundElement}
+            paddingLeft={1}
+            paddingRight={1}
+          >
             <text fg={Theme.textMuted}>open</text>
-            <text attributes={TextAttributes.BOLD}>code{" "}</text>
+            <text attributes={TextAttributes.BOLD}>code </text>
             <text fg={Theme.textMuted}>v{Installation.VERSION}</text>
           </box>
           <box paddingLeft={1} paddingRight={1}>
-            <text fg={Theme.textMuted}>{process.cwd().replace(Global.Path.home, "~")}</text>
+            <text fg={Theme.textMuted}>
+              {process.cwd().replace(Global.Path.home, "~")}
+            </text>
           </box>
         </box>
         <box flexDirection="row">
-          <text paddingRight={1} fg={Theme.textMuted}>tab</text>
+          <text paddingRight={1} fg={Theme.textMuted}>
+            tab
+          </text>
           <text fg={local.agent.color(local.agent.current().name)}>┃</text>
-          <text bg={local.agent.color(local.agent.current().name)} fg={Theme.background}> {bold(local.agent.current().name.toUpperCase())} AGENT </text>
+          <text
+            bg={local.agent.color(local.agent.current().name)}
+            fg={Theme.background}
+          >
+            {" "}
+            {bold(local.agent.current().name.toUpperCase())} AGENT{" "}
+          </text>
         </box>
       </box>
     </box>

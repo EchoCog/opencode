@@ -14,7 +14,11 @@ export const AuthCommand = cmd({
   command: "auth",
   describe: "manage credentials",
   builder: (yargs) =>
-    yargs.command(AuthLoginCommand).command(AuthLogoutCommand).command(AuthListCommand).demandCommand(),
+    yargs
+      .command(AuthLoginCommand)
+      .command(AuthLogoutCommand)
+      .command(AuthListCommand)
+      .demandCommand(),
   async handler() {},
 })
 
@@ -26,7 +30,9 @@ export const AuthListCommand = cmd({
     UI.empty()
     const authPath = path.join(Global.Path.data, "auth.json")
     const homedir = os.homedir()
-    const displayPath = authPath.startsWith(homedir) ? authPath.replace(homedir, "~") : authPath
+    const displayPath = authPath.startsWith(homedir)
+      ? authPath.replace(homedir, "~")
+      : authPath
     prompts.intro(`Credentials ${UI.Style.TEXT_DIM}${displayPath}`)
     const results = await Auth.all().then((x) => Object.entries(x))
     const database = await ModelsDev.get()
@@ -60,7 +66,10 @@ export const AuthListCommand = cmd({
         prompts.log.info(`${provider} ${UI.Style.TEXT_DIM}${envVar}`)
       }
 
-      prompts.outro(`${activeEnvVars.length} environment variable` + (activeEnvVars.length === 1 ? "" : "s"))
+      prompts.outro(
+        `${activeEnvVars.length} environment variable` +
+          (activeEnvVars.length === 1 ? "" : "s"),
+      )
     }
   },
 })
@@ -78,7 +87,9 @@ export const AuthLoginCommand = cmd({
       UI.empty()
       prompts.intro("Add credential")
       if (args.url) {
-        const wellknown = (await fetch(`${args.url}/.well-known/opencode`).then((x) => x.json())) as any
+        const wellknown = (await fetch(`${args.url}/.well-known/opencode`).then(
+          (x) => x.json(),
+        )) as any
         prompts.log.info(`Running \`${wellknown.auth.command.join(" ")}\``)
         const proc = Bun.spawn({
           cmd: wellknown.auth.command,
@@ -137,7 +148,9 @@ export const AuthLoginCommand = cmd({
 
       if (prompts.isCancel(provider)) throw new UI.CancelledError()
 
-      const plugin = await Plugin.list().then((x) => x.find((x) => x.auth?.provider === provider))
+      const plugin = await Plugin.list().then((x) =>
+        x.find((x) => x.auth?.provider === provider),
+      )
       if (plugin && plugin.auth) {
         let index = 0
         if (plugin.auth.methods.length > 1) {
@@ -227,7 +240,10 @@ export const AuthLoginCommand = cmd({
       if (provider === "other") {
         provider = await prompts.text({
           message: "Enter provider id",
-          validate: (x) => (x && x.match(/^[0-9a-z-]+$/) ? undefined : "a-z, 0-9 and hyphens only"),
+          validate: (x) =>
+            x && x.match(/^[0-9a-z-]+$/)
+              ? undefined
+              : "a-z, 0-9 and hyphens only",
         })
         if (prompts.isCancel(provider)) throw new UI.CancelledError()
         provider = provider.replace(/^@ai-sdk\//, "")
@@ -250,7 +266,9 @@ export const AuthLoginCommand = cmd({
       }
 
       if (provider === "vercel") {
-        prompts.log.info("You can create an api key at https://vercel.link/ai-gateway-token")
+        prompts.log.info(
+          "You can create an api key at https://vercel.link/ai-gateway-token",
+        )
       }
 
       const key = await prompts.password({
@@ -283,7 +301,12 @@ export const AuthLogoutCommand = cmd({
     const providerID = await prompts.select({
       message: "Select provider",
       options: credentials.map(([key, value]) => ({
-        label: (database[key]?.name || key) + UI.Style.TEXT_DIM + " (" + value.type + ")",
+        label:
+          (database[key]?.name || key) +
+          UI.Style.TEXT_DIM +
+          " (" +
+          value.type +
+          ")",
         value: key,
       })),
     })

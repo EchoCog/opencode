@@ -17,7 +17,7 @@ export function DialogCommand() {
           category: "Agent",
           onSelect: () => {
             dialog.replace(() => <DialogModel />)
-          }
+          },
         },
         {
           title: "Switch session",
@@ -25,7 +25,7 @@ export function DialogCommand() {
           category: "Session",
           onSelect: () => {
             dialog.replace(() => <DialogSessionList />)
-          }
+          },
         },
         {
           title: "New session",
@@ -36,7 +36,7 @@ export function DialogCommand() {
               type: "home",
             })
             dialog.clear()
-          }
+          },
         },
         {
           title: "Share session",
@@ -44,10 +44,9 @@ export function DialogCommand() {
           category: "Session",
           onSelect: () => {
             console.log("share session")
-          }
-        }
+          },
+        },
       ]}
     />
-
   )
 }

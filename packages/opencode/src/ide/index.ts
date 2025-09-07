@@ -23,7 +23,10 @@ export namespace Ide {
     ),
   }
 
-  export const AlreadyInstalledError = NamedError.create("AlreadyInstalledError", z.object({}))
+  export const AlreadyInstalledError = NamedError.create(
+    "AlreadyInstalledError",
+    z.object({}),
+  )
 
   export const InstallFailedError = NamedError.create(
     "InstallFailedError",

@@ -14,14 +14,19 @@ export namespace Storage {
   const MIGRATIONS: Migration[] = [
     async (dir) => {
       const project = path.resolve(dir, "../project")
-      for await (const projectDir of new Bun.Glob("*").scan({ cwd: project, onlyFiles: false })) {
+      for await (const projectDir of new Bun.Glob("*").scan({
+        cwd: project,
+        onlyFiles: false,
+      })) {
         log.info(`migrating project ${projectDir}`)
         let projectID = projectDir
         const fullProjectDir = path.join(project, projectDir)
         let worktree = "/"
 
         if (projectID !== "global") {
-          for await (const msgFile of new Bun.Glob("storage/session/message/*/*.json").scan({
+          for await (const msgFile of new Bun.Glob(
+            "storage/session/message/*/*.json",
+          ).scan({
             cwd: path.join(project, projectDir),
             absolute: true,
           })) {
@@ -60,11 +65,18 @@ export namespace Storage {
           )
 
           log.info(`migrating sessions for project ${projectID}`)
-          for await (const sessionFile of new Bun.Glob("storage/session/info/*.json").scan({
+          for await (const sessionFile of new Bun.Glob(
+            "storage/session/info/*.json",
+          ).scan({
             cwd: fullProjectDir,
             absolute: true,
           })) {
-            const dest = path.join(dir, "session", projectID, path.basename(sessionFile))
+            const dest = path.join(
+              dir,
+              "session",
+              projectID,
+              path.basename(sessionFile),
+            )
             log.info("copying", {
               sessionFile,
               dest,
@@ -72,11 +84,18 @@ export namespace Storage {
             const session = await Bun.file(sessionFile).json()
             await Bun.write(dest, JSON.stringify(session))
             log.info(`migrating messages for session ${session.id}`)
-            for await (const msgFile of new Bun.Glob(`storage/session/message/${session.id}/*.json`).scan({
+            for await (const msgFile of new Bun.Glob(
+              `storage/session/message/${session.id}/*.json`,
+            ).scan({
               cwd: fullProjectDir,
               absolute: true,
             })) {
-              const dest = path.join(dir, "message", session.id, path.basename(msgFile))
+              const dest = path.join(
+                dir,
+                "message",
+                session.id,
+                path.basename(msgFile),
+              )
               log.info("copying", {
                 msgFile,
                 dest,
@@ -85,13 +104,18 @@ export namespace Storage {
               await Bun.write(dest, JSON.stringify(message))
 
               log.info(`migrating parts for message ${message.id}`)
-              for await (const partFile of new Bun.Glob(`storage/session/part/${session.id}/${message.id}/*.json`).scan(
-                {
-                  cwd: fullProjectDir,
-                  absolute: true,
-                },
-              )) {
-                const dest = path.join(dir, "part", message.id, path.basename(partFile))
+              for await (const partFile of new Bun.Glob(
+                `storage/session/part/${session.id}/${message.id}/*.json`,
+              ).scan({
+                cwd: fullProjectDir,
+                absolute: true,
+              })) {
+                const dest = path.join(
+                  dir,
+                  "part",
+                  message.id,
+                  path.basename(partFile),
+                )
                 const part = await Bun.file(partFile).json()
                 log.info("copying", {
                   partFile,
@@ -164,7 +188,9 @@ export namespace Storage {
           cwd: path.join(dir, ...prefix),
           onlyFiles: true,
         }),
-      ).then((results) => results.map((x) => [...prefix, ...x.slice(0, -5).split(path.sep)]))
+      ).then((results) =>
+        results.map((x) => [...prefix, ...x.slice(0, -5).split(path.sep)]),
+      )
       result.sort()
       return result
     } catch {

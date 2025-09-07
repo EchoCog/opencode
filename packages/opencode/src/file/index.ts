@@ -49,7 +49,11 @@ export namespace File {
     const project = Instance.project
     if (project.vcs !== "git") return []
 
-    const diffOutput = await $`git diff --numstat HEAD`.cwd(Instance.directory).quiet().nothrow().text()
+    const diffOutput = await $`git diff --numstat HEAD`
+      .cwd(Instance.directory)
+      .quiet()
+      .nothrow()
+      .text()
 
     const changedFiles: Info[] = []
 
@@ -76,7 +80,9 @@ export namespace File {
       const untrackedFiles = untrackedOutput.trim().split("\n")
       for (const filepath of untrackedFiles) {
         try {
-          const content = await Bun.file(path.join(Instance.worktree, filepath)).text()
+          const content = await Bun.file(
+            path.join(Instance.worktree, filepath),
+          ).text()
           const lines = content.split("\n").length
           changedFiles.push({
             path: filepath,
@@ -111,7 +117,10 @@ export namespace File {
 
     return changedFiles.map((x) => ({
       ...x,
-      path: path.relative(Instance.directory, path.join(Instance.worktree, x.path)),
+      path: path.relative(
+        Instance.directory,
+        path.join(Instance.worktree, x.path),
+      ),
     }))
   }
 
@@ -125,9 +134,17 @@ export namespace File {
       .then((x) => x.trim())
     if (project.vcs === "git") {
       const rel = path.relative(Instance.worktree, full)
-      const diff = await $`git diff ${rel}`.cwd(Instance.worktree).quiet().nothrow().text()
+      const diff = await $`git diff ${rel}`
+        .cwd(Instance.worktree)
+        .quiet()
+        .nothrow()
+        .text()
       if (diff.trim()) {
-        const original = await $`git show HEAD:${rel}`.cwd(Instance.worktree).quiet().nothrow().text()
+        const original = await $`git show HEAD:${rel}`
+          .cwd(Instance.worktree)
+          .quiet()
+          .nothrow()
+          .text()
         const patch = createPatch(file, original, content, "old", "new", {
           context: Infinity,
         })
@@ -148,9 +165,13 @@ export namespace File {
         ignored = ig.ignores.bind(ig)
       }
     }
-    const resolved = dir ? path.join(Instance.directory, dir) : Instance.directory
+    const resolved = dir
+      ? path.join(Instance.directory, dir)
+      : Instance.directory
     const nodes: Node[] = []
-    for (const entry of await fs.promises.readdir(resolved, { withFileTypes: true })) {
+    for (const entry of await fs.promises.readdir(resolved, {
+      withFileTypes: true,
+    })) {
       if (exclude.includes(entry.name)) continue
       const fullPath = path.join(resolved, entry.name)
       const relativePath = path.relative(Instance.directory, fullPath)
@@ -159,7 +180,9 @@ export namespace File {
         name: entry.name,
         path: relativePath,
         type,
-        ignored: ignored(type === "directory" ? relativePath + "/" : relativePath),
+        ignored: ignored(
+          type === "directory" ? relativePath + "/" : relativePath,
+        ),
       })
     }
     return nodes.sort((a, b) => {

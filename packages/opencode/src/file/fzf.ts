@@ -87,13 +87,15 @@ export namespace Fzf {
           })
       }
       if (config.extension === "zip") {
-        const zipFileReader = new ZipReader(new BlobReader(new Blob([await Bun.file(archivePath).arrayBuffer()])));
-        const entries = await zipFileReader.getEntries();
-        let fzfEntry: any;
+        const zipFileReader = new ZipReader(
+          new BlobReader(new Blob([await Bun.file(archivePath).arrayBuffer()])),
+        )
+        const entries = await zipFileReader.getEntries()
+        let fzfEntry: any
         for (const entry of entries) {
           if (entry.filename === "fzf.exe") {
-            fzfEntry = entry;
-            break;
+            fzfEntry = entry
+            break
           }
         }
 
@@ -101,18 +103,18 @@ export namespace Fzf {
           throw new ExtractionFailedError({
             filepath: archivePath,
             stderr: "fzf.exe not found in zip archive",
-          });
+          })
         }
 
-        const fzfBlob = await fzfEntry.getData(new BlobWriter());
+        const fzfBlob = await fzfEntry.getData(new BlobWriter())
         if (!fzfBlob) {
           throw new ExtractionFailedError({
             filepath: archivePath,
             stderr: "Failed to extract fzf.exe from zip archive",
-          });
+          })
         }
-        await Bun.write(filepath, await fzfBlob.arrayBuffer());
-        await zipFileReader.close();
+        await Bun.write(filepath, await fzfBlob.arrayBuffer())
+        await zipFileReader.close()
       }
       await fs.unlink(archivePath)
       if (process.platform !== "win32") await fs.chmod(filepath, 0o755)

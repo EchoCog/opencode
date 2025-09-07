@@ -17,7 +17,12 @@ const testCases: TestCase[] = [
     replace: 'console.log("universe");',
   },
   {
-    content: ["if (condition) {", "  doSomething();", "  doSomethingElse();", "}"].join("\n"),
+    content: [
+      "if (condition) {",
+      "  doSomething();",
+      "  doSomethingElse();",
+      "}",
+    ].join("\n"),
     find: ["  doSomething();", "  doSomethingElse();"].join("\n"),
     replace: ["  doNewThing();", "  doAnotherThing();"].join("\n"),
   },
@@ -48,8 +53,15 @@ const testCases: TestCase[] = [
       "  return result;",
       "}",
     ].join("\n"),
-    find: ["function calculate(a, b) {", "  // different middle content", "  return result;", "}"].join("\n"),
-    replace: ["function calculate(a, b) {", "  return a * b * 2;", "}"].join("\n"),
+    find: [
+      "function calculate(a, b) {",
+      "  // different middle content",
+      "  return result;",
+      "}",
+    ].join("\n"),
+    replace: ["function calculate(a, b) {", "  return a * b * 2;", "}"].join(
+      "\n",
+    ),
   },
   {
     content: [
@@ -64,7 +76,13 @@ const testCases: TestCase[] = [
       "}",
     ].join("\n"),
     find: ["class MyClass {", "  // different implementation", "}"].join("\n"),
-    replace: ["class MyClass {", "  constructor() {", "    this.value = 42;", "  }", "}"].join("\n"),
+    replace: [
+      "class MyClass {",
+      "  constructor() {",
+      "    this.value = 42;",
+      "  }",
+      "}",
+    ].join("\n"),
   },
 
   // WhitespaceNormalizedReplacer cases
@@ -86,21 +104,48 @@ const testCases: TestCase[] = [
 
   // IndentationFlexibleReplacer cases
   {
-    content: ["    function nested() {", '      console.log("deeply nested");', "      return true;", "    }"].join(
-      "\n",
-    ),
-    find: ["function nested() {", '  console.log("deeply nested");', "  return true;", "}"].join("\n"),
-    replace: ["function nested() {", '  console.log("updated");', "  return false;", "}"].join("\n"),
+    content: [
+      "    function nested() {",
+      '      console.log("deeply nested");',
+      "      return true;",
+      "    }",
+    ].join("\n"),
+    find: [
+      "function nested() {",
+      '  console.log("deeply nested");',
+      "  return true;",
+      "}",
+    ].join("\n"),
+    replace: [
+      "function nested() {",
+      '  console.log("updated");',
+      "  return false;",
+      "}",
+    ].join("\n"),
   },
   {
-    content: ["  if (true) {", '    console.log("level 1");', '      console.log("level 2");', "  }"].join("\n"),
-    find: ["if (true) {", 'console.log("level 1");', '  console.log("level 2");', "}"].join("\n"),
+    content: [
+      "  if (true) {",
+      '    console.log("level 1");',
+      '      console.log("level 2");',
+      "  }",
+    ].join("\n"),
+    find: [
+      "if (true) {",
+      'console.log("level 1");',
+      '  console.log("level 2");',
+      "}",
+    ].join("\n"),
     replace: ["if (true) {", 'console.log("updated");', "}"].join("\n"),
   },
 
   // replaceAll option cases
   {
-    content: ['console.log("test");', 'console.log("test");', 'console.log("test");'].join("\n"),
+    content: [
+      'console.log("test");',
+      'console.log("test");',
+      'console.log("test");',
+    ].join("\n"),
     find: 'console.log("test");',
     replace: 'console.log("updated");',
     all: true,
@@ -168,7 +213,9 @@ const testCases: TestCase[] = [
 
   // MultiOccurrenceReplacer cases (with replaceAll)
   {
-    content: ["debug('start');", "debug('middle');", "debug('end');"].join("\n"),
+    content: ["debug('start');", "debug('middle');", "debug('end');"].join(
+      "\n",
+    ),
     find: "debug",
     replace: "log",
     all: true,
@@ -192,7 +239,9 @@ const testCases: TestCase[] = [
     replace: "const value = 24;",
   },
   {
-    content: ["", "  if (condition) {", "    doSomething();", "  }", ""].join("\n"),
+    content: ["", "  if (condition) {", "    doSomething();", "  }", ""].join(
+      "\n",
+    ),
     find: ["if (condition) {", "  doSomething();", "}"].join("\n"),
     replace: ["if (condition) {", "  doNothing();", "}"].join("\n"),
   },
@@ -213,7 +262,9 @@ const testCases: TestCase[] = [
       "  return result;",
       "}",
     ].join("\n"),
-    replace: ["function calculate(a, b) {", "  return (a + b) * 2;", "}"].join("\n"),
+    replace: ["function calculate(a, b) {", "  return (a + b) * 2;", "}"].join(
+      "\n",
+    ),
   },
   {
     content: [
@@ -227,8 +278,15 @@ const testCases: TestCase[] = [
       "  }",
       "}",
     ].join("\n"),
-    find: ["class TestClass {", "  // different implementation", "  // with multiple lines", "}"].join("\n"),
-    replace: ["class TestClass {", "  getValue() { return 42; }", "}"].join("\n"),
+    find: [
+      "class TestClass {",
+      "  // different implementation",
+      "  // with multiple lines",
+      "}",
+    ].join("\n"),
+    replace: ["class TestClass {", "  getValue() { return 42; }", "}"].join(
+      "\n",
+    ),
   },
 
   // Combined edge cases for new replacers
@@ -238,7 +296,9 @@ const testCases: TestCase[] = [
     replace: 'console.log("updated");',
   },
   {
-    content: ["  ", "function test() {", "  return 'value';", "}", "  "].join("\n"),
+    content: ["  ", "function test() {", "  return 'value';", "}", "  "].join(
+      "\n",
+    ),
     find: ["function test() {", "return 'value';", "}"].join("\n"),
     replace: ["function test() {", "return 'new value';", "}"].join("\n"),
   },
@@ -286,7 +346,13 @@ const testCases: TestCase[] = [
 
   // ContextAwareReplacer - test with trailing newline in find string
   {
-    content: ["class Test {", "  method1() {", "    return 1;", "  }", "}"].join("\n"),
+    content: [
+      "class Test {",
+      "  method1() {",
+      "    return 1;",
+      "  }",
+      "}",
+    ].join("\n"),
     find: [
       "class Test {",
       "  // different content",
@@ -347,7 +413,9 @@ const testCases: TestCase[] = [
       "}",
     ].join("\n"),
     find: ["  }", "  return mainLayout"].join("\n"),
-    replace: ["  }", "  // Add some code here", "  return mainLayout"].join("\n"),
+    replace: ["  }", "  // Add some code here", "  return mainLayout"].join(
+      "\n",
+    ),
     fail: true, // This should fail because the pattern has low similarity score
   },
 
@@ -360,7 +428,12 @@ const testCases: TestCase[] = [
       "  return mainLayout",
       "}",
     ].join("\n"),
-    find: ["function renderLayout() {", "  // different content", "  return mainLayout", "}"].join("\n"),
+    find: [
+      "function renderLayout() {",
+      "  // different content",
+      "  return mainLayout",
+      "}",
+    ].join("\n"),
     replace: [
       "function renderLayout() {",
       "  const header = createHeader()",
@@ -375,7 +448,10 @@ const testCases: TestCase[] = [
   {
     content: Array.from({ length: 100 }, (_, i) => `line ${i}`).join("\n"),
     find: Array.from({ length: 50 }, (_, i) => `line ${i + 25}`).join("\n"),
-    replace: Array.from({ length: 50 }, (_, i) => `updated line ${i + 25}`).join("\n"),
+    replace: Array.from(
+      { length: 50 },
+      (_, i) => `updated line ${i + 25}`,
+    ).join("\n"),
   },
 
   // Test case for the fix - more specific pattern should work
@@ -387,7 +463,12 @@ const testCases: TestCase[] = [
       "  return mainLayout",
       "}",
     ].join("\n"),
-    find: ["function renderLayout() {", "  // different content", "  return mainLayout", "}"].join("\n"),
+    find: [
+      "function renderLayout() {",
+      "  // different content",
+      "  return mainLayout",
+      "}",
+    ].join("\n"),
     replace: [
       "function renderLayout() {",
       "  const header = createHeader()",
@@ -405,7 +486,12 @@ const testCases: TestCase[] = [
       "\nfunction test() {\n" +
       Array.from({ length: 60 }, (_, i) => `  content ${i}`).join("\n") +
       "\n  return result\n}",
-    find: ["function test() {", "  // different content", "  return result", "}"].join("\n"),
+    find: [
+      "function test() {",
+      "  // different content",
+      "  return result",
+      "}",
+    ].join("\n"),
     replace: ["function test() {", "  return 42", "}"].join("\n"),
   },
 ]
@@ -417,7 +503,12 @@ describe("EditTool Replacers", () => {
         replace(testCase.content, testCase.find, testCase.replace, testCase.all)
       }).toThrow()
     } else {
-      const result = replace(testCase.content, testCase.find, testCase.replace, testCase.all)
+      const result = replace(
+        testCase.content,
+        testCase.find,
+        testCase.replace,
+        testCase.all,
+      )
       expect(result).toContain(testCase.replace)
     }
   })

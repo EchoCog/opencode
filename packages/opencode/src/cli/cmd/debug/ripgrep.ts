@@ -5,7 +5,12 @@ import { cmd } from "../cmd"
 
 export const RipgrepCommand = cmd({
   command: "rg",
-  builder: (yargs) => yargs.command(TreeCommand).command(FilesCommand).command(SearchCommand).demandCommand(),
+  builder: (yargs) =>
+    yargs
+      .command(TreeCommand)
+      .command(FilesCommand)
+      .command(SearchCommand)
+      .demandCommand(),
   async handler() {},
 })
 
@@ -17,7 +22,9 @@ const TreeCommand = cmd({
     }),
   async handler(args) {
     await bootstrap(process.cwd(), async () => {
-      console.log(await Ripgrep.tree({ cwd: Instance.directory, limit: args.limit }))
+      console.log(
+        await Ripgrep.tree({ cwd: Instance.directory, limit: args.limit }),
+      )
     })
   },
 })

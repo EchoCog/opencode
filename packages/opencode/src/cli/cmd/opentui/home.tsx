@@ -1,7 +1,7 @@
-import { Installation } from "../../../installation";
-import { Theme } from "./context/theme";
+import { Installation } from "../../../installation"
+import { Theme } from "./context/theme"
 import { TextAttributes, bold, fg } from "@opentui/core"
-import { Prompt } from "./component/prompt";
+import { Prompt } from "./component/prompt"
 
 export function Home() {
   return (
@@ -16,17 +16,18 @@ export function Home() {
           <HelpRow slash="agents">list agents</HelpRow>
         </box>
       </box>
-      <box paddingTop={3} minWidth={75} >
+      <box paddingTop={3} minWidth={75}>
         <Prompt />
-      </box >
+      </box>
     </box>
   )
 }
 
-function HelpRow(props: { children: string, slash: string }) {
+function HelpRow(props: { children: string; slash: string }) {
   return (
     <text>
-      {bold(fg(Theme.primary)("/" + props.slash.padEnd(10, " ")))} {props.children.padEnd(15, " ")} {fg(Theme.textMuted)("ctrl+x n")}
+      {bold(fg(Theme.primary)("/" + props.slash.padEnd(10, " ")))}{" "}
+      {props.children.padEnd(15, " ")} {fg(Theme.textMuted)("ctrl+x n")}
     </text>
   )
 }
@@ -35,28 +36,18 @@ function Logo() {
   return (
     <box>
       <box flexDirection="row">
-        <text fg={Theme.textMuted}>
-          {"█▀▀█ █▀▀█ █▀▀ █▀▀▄"}
-        </text>
-        <text fg={Theme.text} attributes={TextAttributes.BOLD} >
+        <text fg={Theme.textMuted}>{"█▀▀█ █▀▀█ █▀▀ █▀▀▄"}</text>
+        <text fg={Theme.text} attributes={TextAttributes.BOLD}>
           {" █▀▀ █▀▀█ █▀▀▄ █▀▀"}
         </text>
       </box>
       <box flexDirection="row">
-        <text fg={Theme.textMuted}>
-          {`█░░█ █░░█ █▀▀ █░░█`}
-        </text>
-        <text fg={Theme.text}>
-          {` █░░ █░░█ █░░█ █▀▀`}
-        </text>
+        <text fg={Theme.textMuted}>{`█░░█ █░░█ █▀▀ █░░█`}</text>
+        <text fg={Theme.text}>{` █░░ █░░█ █░░█ █▀▀`}</text>
       </box>
       <box flexDirection="row">
-        <text fg={Theme.textMuted}>
-          {`▀▀▀▀ █▀▀▀ ▀▀▀ ▀  ▀`}
-        </text>
-        <text fg={Theme.text}>
-          {` ▀▀▀ ▀▀▀▀ ▀▀▀  ▀▀▀`}
-        </text>
+        <text fg={Theme.textMuted}>{`▀▀▀▀ █▀▀▀ ▀▀▀ ▀  ▀`}</text>
+        <text fg={Theme.text}>{` ▀▀▀ ▀▀▀▀ ▀▀▀  ▀▀▀`}</text>
       </box>
       <box flexDirection="row" justifyContent="flex-end">
         <text fg={Theme.textMuted}>{Installation.VERSION}</text>

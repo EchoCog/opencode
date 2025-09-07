@@ -1,7 +1,15 @@
 import "./[id].css"
 import { Billing } from "@opencode/cloud-core/billing.js"
 import { Key } from "@opencode/cloud-core/key.js"
-import { action, createAsync, query, useAction, useSubmission, json, useParams } from "@solidjs/router"
+import {
+  action,
+  createAsync,
+  query,
+  useAction,
+  useSubmission,
+  json,
+  useParams,
+} from "@solidjs/router"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { withActor } from "~/context/auth.withActor"
 import { IconCopy, IconCheck } from "~/component/icon"
@@ -11,7 +19,6 @@ import { Actor } from "@opencode/cloud-core/actor.js"
 /////////////////////////////////////
 // Keys related queries and actions
 /////////////////////////////////////
-
 
 const listKeys = query(async (workspaceID: string) => {
   "use server"
@@ -54,15 +61,27 @@ const getBillingInfo = query(async (workspaceID: string) => {
   }, workspaceID)
 }, "billingInfo")
 
-const createCheckoutUrl = action(async (workspaceID: string, successUrl: string, cancelUrl: string) => {
-  "use server"
-  return withActor(() => Billing.generateCheckoutUrl({ successUrl, cancelUrl }), workspaceID)
-}, "checkoutUrl")
+const createCheckoutUrl = action(
+  async (workspaceID: string, successUrl: string, cancelUrl: string) => {
+    "use server"
+    return withActor(
+      () => Billing.generateCheckoutUrl({ successUrl, cancelUrl }),
+      workspaceID,
+    )
+  },
+  "checkoutUrl",
+)
 
-const createPortalUrl = action(async (workspaceID: string, returnUrl: string) => {
-  "use server"
-  return withActor(() => Billing.generatePortalUrl({ returnUrl }), workspaceID)
-}, "portalUrl")
+const createPortalUrl = action(
+  async (workspaceID: string, returnUrl: string) => {
+    "use server"
+    return withActor(
+      () => Billing.generatePortalUrl({ returnUrl }),
+      workspaceID,
+    )
+  },
+  "portalUrl",
+)
 
 export default function () {
   const params = useParams()
@@ -165,7 +184,11 @@ export default function () {
   const handleBuyCredits = async () => {
     try {
       const baseUrl = window.location.href
-      const checkoutUrl = await createCheckoutUrlAction(params.id, baseUrl, baseUrl)
+      const checkoutUrl = await createCheckoutUrlAction(
+        params.id,
+        baseUrl,
+        baseUrl,
+      )
       if (checkoutUrl) {
         window.location.href = checkoutUrl
       }
@@ -180,7 +203,8 @@ export default function () {
       <section data-slot="title-section">
         <h1>opencode zen</h1>
         <p>
-          Curated list of models provided by opencode. <a href="/docs/zen">Learn more</a>.
+          Curated list of models provided by opencode.{" "}
+          <a href="/docs/zen">Learn more</a>.
         </p>
       </section>
 
@@ -258,21 +282,37 @@ export default function () {
                       <tr>
                         <td data-slot="key-name">{key.name}</td>
                         <td data-slot="key-value">
-                          <div onClick={() => copyKeyToClipboard(key.key, key.id)} title="Click to copy API key">
+                          <div
+                            onClick={() => copyKeyToClipboard(key.key, key.id)}
+                            title="Click to copy API key"
+                          >
                             <span>{formatKey(key.key)}</span>
                             <Show
                               when={copiedKeyId() === key.id}
-                              fallback={<IconCopy style={{ width: "14px", height: "14px" }} />}
+                              fallback={
+                                <IconCopy
+                                  style={{ width: "14px", height: "14px" }}
+                                />
+                              }
                             >
-                              <IconCheck style={{ width: "14px", height: "14px" }} />
+                              <IconCheck
+                                style={{ width: "14px", height: "14px" }}
+                              />
                             </Show>
                           </div>
                         </td>
-                        <td data-slot="key-date" title={formatDateUTC(key.timeCreated)}>
+                        <td
+                          data-slot="key-date"
+                          title={formatDateUTC(key.timeCreated)}
+                        >
                           {formatDateForTable(key.timeCreated)}
                         </td>
                         <td data-slot="key-actions">
-                          <button data-color="ghost" onClick={() => handleDeleteKey(key.id)} title="Delete API key">
+                          <button
+                            data-color="ghost"
+                            onClick={() => handleDeleteKey(key.id)}
+                            title="Delete API key"
+                          >
                             Delete
                           </button>
                         </td>
@@ -296,7 +336,9 @@ export default function () {
               data-slot="amount"
               classList={{
                 danger: (() => {
-                  const balanceStr = ((billingInfo()?.billing?.balance ?? 0) / 100000000).toFixed(2)
+                  const balanceStr = (
+                    (billingInfo()?.billing?.balance ?? 0) / 100000000
+                  ).toFixed(2)
                   return balanceStr === "0.00" || balanceStr === "-0.00"
                 })(),
               }}
@@ -304,13 +346,21 @@ export default function () {
               <span data-slot="currency">$</span>
               <span data-slot="value">
                 {(() => {
-                  const balanceStr = ((billingInfo()?.billing?.balance ?? 0) / 100000000).toFixed(2)
+                  const balanceStr = (
+                    (billingInfo()?.billing?.balance ?? 0) / 100000000
+                  ).toFixed(2)
                   return balanceStr === "-0.00" ? "0.00" : balanceStr
                 })()}
               </span>
             </div>
-            <button data-color="primary" disabled={createCheckoutUrlSubmission.pending} onClick={handleBuyCredits}>
-              {createCheckoutUrlSubmission.pending ? "Loading..." : "Buy Credits"}
+            <button
+              data-color="primary"
+              disabled={createCheckoutUrlSubmission.pending}
+              onClick={handleBuyCredits}
+            >
+              {createCheckoutUrlSubmission.pending
+                ? "Loading..."
+                : "Buy Credits"}
             </button>
           </div>
         </section>
@@ -346,13 +396,18 @@ export default function () {
                       const date = createMemo(() => new Date(usage.timeCreated))
                       return (
                         <tr>
-                          <td data-slot="usage-date" title={formatDateUTC(date())}>
+                          <td
+                            data-slot="usage-date"
+                            title={formatDateUTC(date())}
+                          >
                             {formatDateForTable(date())}
                           </td>
                           <td data-slot="usage-model">{usage.model}</td>
                           <td data-slot="usage-tokens">{usage.inputTokens}</td>
                           <td data-slot="usage-tokens">{usage.outputTokens}</td>
-                          <td data-slot="usage-cost">${((usage.cost ?? 0) / 100000000).toFixed(4)}</td>
+                          <td data-slot="usage-cost">
+                            ${((usage.cost ?? 0) / 100000000).toFixed(4)}
+                          </td>
                         </tr>
                       )
                     }}
@@ -385,11 +440,16 @@ export default function () {
                       const date = new Date(payment.timeCreated)
                       return (
                         <tr>
-                          <td data-slot="payment-date" title={formatDateUTC(date)}>
+                          <td
+                            data-slot="payment-date"
+                            title={formatDateUTC(date)}
+                          >
                             {formatDateForTable(date)}
                           </td>
                           <td data-slot="payment-id">{payment.id}</td>
-                          <td data-slot="payment-amount">${((payment.amount ?? 0) / 100000000).toFixed(2)}</td>
+                          <td data-slot="payment-amount">
+                            ${((payment.amount ?? 0) / 100000000).toFixed(2)}
+                          </td>
                         </tr>
                       )
                     }}
@@ -399,7 +459,6 @@ export default function () {
             </div>
           </section>
         </Show>
-
       </div>
     </div>
   )

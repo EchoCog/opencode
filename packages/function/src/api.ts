@@ -206,7 +206,11 @@ export default new Hono<{ Bindings: Env }>()
 
     // get Authorization header
     const token = c.req.header("Authorization")?.replace(/^Bearer /, "")
-    if (!token) return c.json({ error: "Authorization header is required" }, { status: 401 })
+    if (!token)
+      return c.json(
+        { error: "Authorization header is required" },
+        { status: 401 },
+      )
 
     // verify token
     const JWKS = createRemoteJWKSet(new URL(JWKS_URL))
@@ -234,10 +238,16 @@ export default new Hono<{ Bindings: Env }>()
 
     // Lookup installation
     const octokit = new Octokit({ auth: appAuth.token })
-    const { data: installation } = await octokit.apps.getRepoInstallation({ owner, repo })
+    const { data: installation } = await octokit.apps.getRepoInstallation({
+      owner,
+      repo,
+    })
 
     // Get installation token
-    const installationAuth = await auth({ type: "installation", installationId: installation.id })
+    const installationAuth = await auth({
+      type: "installation",
+      installationId: installation.id,
+    })
 
     return c.json({ token: installationAuth.token })
   })
@@ -258,7 +268,11 @@ export default new Hono<{ Bindings: Env }>()
       // Verify permissions
       const userClient = new Octokit({ auth: token })
       const { data: repoData } = await userClient.repos.get({ owner, repo })
-      if (!repoData.permissions.admin && !repoData.permissions.push && !repoData.permissions.maintain)
+      if (
+        !repoData.permissions.admin &&
+        !repoData.permissions.push &&
+        !repoData.permissions.maintain
+      )
         throw new Error("User does not have write permissions")
 
       // Get installation token
@@ -270,10 +284,16 @@ export default new Hono<{ Bindings: Env }>()
 
       // Lookup installation
       const appClient = new Octokit({ auth: appAuth.token })
-      const { data: installation } = await appClient.apps.getRepoInstallation({ owner, repo })
+      const { data: installation } = await appClient.apps.getRepoInstallation({
+        owner,
+        repo,
+      })
 
       // Get installation token
-      const installationAuth = await auth({ type: "installation", installationId: installation.id })
+      const installationAuth = await auth({
+        type: "installation",
+        installationId: installation.id,
+      })
 
       return c.json({ token: installationAuth.token })
     } catch (e: any) {

@@ -291,9 +291,9 @@ function ReadToolPart(props: ToolProps<typeof ReadTool>) {
   const hast = createMemo(() =>
     props.metadata["preview"]
       ? highlight.highlightHast(
-        props.metadata["preview"],
-        highlight.Language.TS,
-      )
+          props.metadata["preview"],
+          highlight.Language.TS,
+        )
       : "",
   )
   return (

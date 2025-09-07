@@ -61,9 +61,12 @@ export namespace Server {
           status: 400,
         })
       }
-      return c.json(new NamedError.Unknown({ message: err.toString() }).toObject(), {
-        status: 400,
-      })
+      return c.json(
+        new NamedError.Unknown({ message: err.toString() }).toObject(),
+        {
+          status: 400,
+        },
+      )
     })
     .use(async (c, next) => {
       const skipLogging = c.req.path === "/log"
@@ -731,7 +734,10 @@ export namespace Server {
       async (c) => {
         const id = c.req.valid("param").id
         log.info("revert", c.req.valid("json"))
-        const session = await Session.revert({ sessionID: id, ...c.req.valid("json") })
+        const session = await Session.revert({
+          sessionID: id,
+          ...c.req.valid("json"),
+        })
         return c.json(session)
       },
     )
@@ -790,7 +796,11 @@ export namespace Server {
         const params = c.req.valid("param")
         const id = params.id
         const permissionID = params.permissionID
-        Permission.respond({ sessionID: id, permissionID, response: c.req.valid("json").response })
+        Permission.respond({
+          sessionID: id,
+          permissionID,
+          response: c.req.valid("json").response,
+        })
         return c.json(true)
       },
     )
@@ -837,10 +847,15 @@ export namespace Server {
         },
       }),
       async (c) => {
-        const providers = await Provider.list().then((x) => mapValues(x, (item) => item.info))
+        const providers = await Provider.list().then((x) =>
+          mapValues(x, (item) => item.info),
+        )
         return c.json({
           providers: Object.values(providers),
-          default: mapValues(providers, (item) => Provider.sort(Object.values(item.models))[0].id),
+          default: mapValues(
+            providers,
+            (item) => Provider.sort(Object.values(item.models))[0].id,
+          ),
         })
       },
     )
@@ -1037,8 +1052,12 @@ export namespace Server {
       zValidator(
         "json",
         z.object({
-          service: z.string().openapi({ description: "Service name for the log entry" }),
-          level: z.enum(["debug", "info", "error", "warn"]).openapi({ description: "Log level" }),
+          service: z
+            .string()
+            .openapi({ description: "Service name for the log entry" }),
+          level: z
+            .enum(["debug", "info", "error", "warn"])
+            .openapi({ description: "Log level" }),
           message: z.string().openapi({ description: "Log message" }),
           extra: z
             .record(z.string(), z.any())

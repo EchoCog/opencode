@@ -1,5 +1,10 @@
 import { getRequestEvent } from "solid-js/web"
-import { and, Database, eq, inArray } from "@opencode/cloud-core/drizzle/index.js"
+import {
+  and,
+  Database,
+  eq,
+  inArray,
+} from "@opencode/cloud-core/drizzle/index.js"
 import { WorkspaceTable } from "@opencode/cloud-core/schema/workspace.sql.js"
 import { UserTable } from "@opencode/cloud-core/schema/user.sql.js"
 import { redirect } from "@solidjs/router"
@@ -61,8 +66,16 @@ export const getActor = async (workspace?: string): Promise<Actor.Info> => {
           })
           .from(AccountTable)
           .innerJoin(UserTable, and(eq(UserTable.email, AccountTable.email)))
-          .innerJoin(WorkspaceTable, eq(WorkspaceTable.id, UserTable.workspaceID))
-          .where(and(inArray(AccountTable.id, accounts), eq(WorkspaceTable.id, workspace)))
+          .innerJoin(
+            WorkspaceTable,
+            eq(WorkspaceTable.id, UserTable.workspaceID),
+          )
+          .where(
+            and(
+              inArray(AccountTable.id, accounts),
+              eq(WorkspaceTable.id, workspace),
+            ),
+          )
           .limit(1)
           .execute()
           .then((x) => x[0])

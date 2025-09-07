@@ -111,7 +111,11 @@ export const RunCommand = cmd({
       if (cfg.share === "auto" || Flag.OPENCODE_AUTO_SHARE || args.share) {
         try {
           await Session.share(session.id)
-          UI.println(UI.Style.TEXT_INFO_BOLD + "~  https://opencode.ai/s/" + session.id.slice(-8))
+          UI.println(
+            UI.Style.TEXT_INFO_BOLD +
+              "~  https://opencode.ai/s/" +
+              session.id.slice(-8),
+          )
         } catch (error) {
           if (error instanceof Error && error.message.includes("disabled")) {
             UI.println(UI.Style.TEXT_DANGER_BOLD + "!  " + error.message)
@@ -150,10 +154,15 @@ export const RunCommand = cmd({
         const part = evt.properties.part
 
         if (part.type === "tool" && part.state.status === "completed") {
-          const [tool, color] = TOOL[part.tool] ?? [part.tool, UI.Style.TEXT_INFO_BOLD]
+          const [tool, color] = TOOL[part.tool] ?? [
+            part.tool,
+            UI.Style.TEXT_INFO_BOLD,
+          ]
           const title =
             part.state.title ||
-            (Object.keys(part.state.input).length > 0 ? JSON.stringify(part.state.input) : "Unknown")
+            (Object.keys(part.state.input).length > 0
+              ? JSON.stringify(part.state.input)
+              : "Unknown")
           printEvent(color, tool, title)
         }
 
@@ -216,7 +225,9 @@ export const RunCommand = cmd({
 
       const isPiped = !process.stdout.isTTY
       if (isPiped) {
-        const match = result.parts.findLast((x: any) => x.type === "text") as any
+        const match = result.parts.findLast(
+          (x: any) => x.type === "text",
+        ) as any
         if (match) process.stdout.write(UI.markdown(match.text))
         if (errorMsg) process.stdout.write(errorMsg)
       }

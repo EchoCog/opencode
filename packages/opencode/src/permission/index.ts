@@ -31,7 +31,11 @@ export namespace Permission {
     Updated: Bus.event("permission.updated", Info),
     Replied: Bus.event(
       "permission.replied",
-      z.object({ sessionID: z.string(), permissionID: z.string(), response: z.string() }),
+      z.object({
+        sessionID: z.string(),
+        permissionID: z.string(),
+        response: z.string(),
+      }),
     ),
   }
 
@@ -61,7 +65,14 @@ export namespace Permission {
     async (state) => {
       for (const pending of Object.values(state.pending)) {
         for (const item of Object.values(pending)) {
-          item.reject(new RejectedError(item.info.sessionID, item.info.id, item.info.callID, item.info.metadata))
+          item.reject(
+            new RejectedError(
+              item.info.sessionID,
+              item.info.id,
+              item.info.callID,
+              item.info.metadata,
+            ),
+          )
         }
       }
     },
@@ -104,7 +115,12 @@ export namespace Permission {
       }).then((x) => x.status)
     ) {
       case "deny":
-        throw new RejectedError(info.sessionID, info.id, info.callID, info.metadata)
+        throw new RejectedError(
+          info.sessionID,
+          info.id,
+          info.callID,
+          info.metadata,
+        )
       case "allow":
         return
     }
@@ -123,14 +139,25 @@ export namespace Permission {
   export const Response = z.enum(["once", "always", "reject"])
   export type Response = z.infer<typeof Response>
 
-  export function respond(input: { sessionID: Info["sessionID"]; permissionID: Info["id"]; response: Response }) {
+  export function respond(input: {
+    sessionID: Info["sessionID"]
+    permissionID: Info["id"]
+    response: Response
+  }) {
     log.info("response", input)
     const { pending, approved } = state()
     const match = pending[input.sessionID]?.[input.permissionID]
     if (!match) return
     delete pending[input.sessionID][input.permissionID]
     if (input.response === "reject") {
-      match.reject(new RejectedError(input.sessionID, input.permissionID, match.info.callID, match.info.metadata))
+      match.reject(
+        new RejectedError(
+          input.sessionID,
+          input.permissionID,
+          match.info.callID,
+          match.info.metadata,
+        ),
+      )
       return
     }
     match.resolve()
@@ -143,8 +170,15 @@ export namespace Permission {
       approved[input.sessionID] = approved[input.sessionID] || {}
       approved[input.sessionID][match.info.pattern ?? match.info.type] = true
       for (const item of Object.values(pending[input.sessionID])) {
-        if ((item.info.pattern ?? item.info.type) === (match.info.pattern ?? match.info.type)) {
-          respond({ sessionID: item.info.sessionID, permissionID: item.info.id, response: input.response })
+        if (
+          (item.info.pattern ?? item.info.type) ===
+          (match.info.pattern ?? match.info.type)
+        ) {
+          respond({
+            sessionID: item.info.sessionID,
+            permissionID: item.info.id,
+            response: input.response,
+          })
         }
       }
     }
@@ -157,7 +191,9 @@ export namespace Permission {
       public readonly toolCallID?: string,
       public readonly metadata?: Record<string, any>,
     ) {
-      super(`The user rejected permission to use this specific tool call. You may try again with different parameters.`)
+      super(
+        `The user rejected permission to use this specific tool call. You may try again with different parameters.`,
+      )
     }
   }
 }

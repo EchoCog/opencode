@@ -48,6 +48,10 @@ const FileListCommand = cmd({
 export const FileCommand = cmd({
   command: "file",
   builder: (yargs) =>
-    yargs.command(FileReadCommand).command(FileStatusCommand).command(FileListCommand).demandCommand(),
+    yargs
+      .command(FileReadCommand)
+      .command(FileStatusCommand)
+      .command(FileListCommand)
+      .demandCommand(),
   async handler() {},
 })

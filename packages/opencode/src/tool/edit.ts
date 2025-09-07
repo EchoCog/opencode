@@ -22,8 +22,15 @@ export const EditTool = Tool.define("edit", {
   parameters: z.object({
     filePath: z.string().describe("The absolute path to the file to modify"),
     oldString: z.string().describe("The text to replace"),
-    newString: z.string().describe("The text to replace it with (must be different from oldString)"),
-    replaceAll: z.boolean().optional().describe("Replace all occurrences of oldString (default false)"),
+    newString: z
+      .string()
+      .describe(
+        "The text to replace it with (must be different from oldString)",
+      ),
+    replaceAll: z
+      .boolean()
+      .optional()
+      .describe("Replace all occurrences of oldString (default false)"),
   }),
   async execute(params, ctx) {
     if (!params.filePath) {
@@ -34,9 +41,13 @@ export const EditTool = Tool.define("edit", {
       throw new Error("oldString and newString must be different")
     }
 
-    const filePath = path.isAbsolute(params.filePath) ? params.filePath : path.join(Instance.directory, params.filePath)
+    const filePath = path.isAbsolute(params.filePath)
+      ? params.filePath
+      : path.join(Instance.directory, params.filePath)
     if (!Filesystem.contains(Instance.directory, filePath)) {
-      throw new Error(`File ${filePath} is not in the current working directory`)
+      throw new Error(
+        `File ${filePath} is not in the current working directory`,
+      )
     }
 
     const agent = await Agent.get(ctx.agent)
@@ -46,7 +57,9 @@ export const EditTool = Tool.define("edit", {
     await (async () => {
       if (params.oldString === "") {
         contentNew = params.newString
-        diff = trimDiff(createTwoFilesPatch(filePath, filePath, contentOld, contentNew))
+        diff = trimDiff(
+          createTwoFilesPatch(filePath, filePath, contentOld, contentNew),
+        )
         if (agent.permission.edit === "ask") {
           await Permission.ask({
             type: "edit",
@@ -70,12 +83,20 @@ export const EditTool = Tool.define("edit", {
       const file = Bun.file(filePath)
       const stats = await file.stat().catch(() => {})
       if (!stats) throw new Error(`File ${filePath} not found`)
-      if (stats.isDirectory()) throw new Error(`Path is a directory, not a file: ${filePath}`)
+      if (stats.isDirectory())
+        throw new Error(`Path is a directory, not a file: ${filePath}`)
       await FileTime.assert(ctx.sessionID, filePath)
       contentOld = await file.text()
-      contentNew = replace(contentOld, params.oldString, params.newString, params.replaceAll)
+      contentNew = replace(
+        contentOld,
+        params.oldString,
+        params.newString,
+        params.replaceAll,
+      )
 
-      diff = trimDiff(createTwoFilesPatch(filePath, filePath, contentOld, contentNew))
+      diff = trimDiff(
+        createTwoFilesPatch(filePath, filePath, contentOld, contentNew),
+      )
       if (agent.permission.edit === "ask") {
         await Permission.ask({
           type: "edit",
@@ -96,7 +117,9 @@ export const EditTool = Tool.define("edit", {
         file: filePath,
       })
       contentNew = await file.text()
-      diff = trimDiff(createTwoFilesPatch(filePath, filePath, contentOld, contentNew))
+      diff = trimDiff(
+        createTwoFilesPatch(filePath, filePath, contentOld, contentNew),
+      )
     })()
 
     FileTime.read(ctx.sessionID, filePath)
@@ -128,7 +151,10 @@ export const EditTool = Tool.define("edit", {
   },
 })
 
-export type Replacer = (content: string, find: string) => Generator<string, void, unknown>
+export type Replacer = (
+  content: string,
+  find: string,
+) => Generator<string, void, unknown>
 
 // Similarity thresholds for block anchor fallback matching
 const SINGLE_CANDIDATE_SIMILARITY_THRESHOLD = 0.0
@@ -143,13 +169,19 @@ function levenshtein(a: string, b: string): number {
     return Math.max(a.length, b.length)
   }
   const matrix = Array.from({ length: a.length + 1 }, (_, i) =>
-    Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+    Array.from({ length: b.length + 1 }, (_, j) =>
+      i === 0 ? j : j === 0 ? i : 0,
+    ),
   )
 
   for (let i = 1; i <= a.length; i++) {
     for (let j = 1; j <= b.length; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1
-      matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost,
+      )
     }
   }
   return matrix[a.length][b.length]
@@ -334,7 +366,10 @@ export const BlockAnchorReplacer: Replacer = function* (content, find) {
   }
 }
 
-export const WhitespaceNormalizedReplacer: Replacer = function* (content, find) {
+export const WhitespaceNormalizedReplacer: Replacer = function* (
+  content,
+  find,
+) {
   const normalizeWhitespace = (text: string) => text.replace(/\s+/g, " ").trim()
   const normalizedFind = normalizeWhitespace(find)
 
@@ -351,7 +386,9 @@ export const WhitespaceNormalizedReplacer: Replacer = function* (content, find) 
         // Find the actual substring in the original line that matches
         const words = find.trim().split(/\s+/)
         if (words.length > 0) {
-          const pattern = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+")
+          const pattern = words
+            .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+            .join("\\s+")
           try {
             const regex = new RegExp(pattern)
             const match = line.match(regex)
@@ -391,7 +428,9 @@ export const IndentationFlexibleReplacer: Replacer = function* (content, find) {
       }),
     )
 
-    return lines.map((line) => (line.trim().length === 0 ? line : line.slice(minIndent))).join("\n")
+    return lines
+      .map((line) => (line.trim().length === 0 ? line : line.slice(minIndent)))
+      .join("\n")
   }
 
   const normalizedFind = removeIndentation(find)
@@ -542,7 +581,10 @@ export const ContextAwareReplacer: Replacer = function* (content, find) {
             }
           }
 
-          if (totalNonEmptyLines === 0 || matchingLines / totalNonEmptyLines >= 0.5) {
+          if (
+            totalNonEmptyLines === 0 ||
+            matchingLines / totalNonEmptyLines >= 0.5
+          ) {
             yield block
             break // Only match the first occurrence
           }
@@ -589,7 +631,12 @@ function trimDiff(diff: string): string {
   return trimmedLines.join("\n")
 }
 
-export function replace(content: string, oldString: string, newString: string, replaceAll = false): string {
+export function replace(
+  content: string,
+  oldString: string,
+  newString: string,
+  replaceAll = false,
+): string {
   if (oldString === newString) {
     throw new Error("oldString and newString must be different")
   }
@@ -613,7 +660,11 @@ export function replace(content: string, oldString: string, newString: string, r
       }
       const lastIndex = content.lastIndexOf(search)
       if (index !== lastIndex) continue
-      return content.substring(0, index) + newString + content.substring(index + search.length)
+      return (
+        content.substring(0, index) +
+        newString +
+        content.substring(index + search.length)
+      )
     }
   }
   throw new Error("oldString not found in content or was found multiple times")

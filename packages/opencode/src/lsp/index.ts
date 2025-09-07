@@ -116,12 +116,15 @@ export namespace LSP {
     const extension = path.parse(file).ext
     const result: LSPClient.Info[] = []
     for (const server of Object.values(s.servers)) {
-      if (server.extensions.length && !server.extensions.includes(extension)) continue
+      if (server.extensions.length && !server.extensions.includes(extension))
+        continue
       const root = await server.root(file)
       if (!root) continue
       if (s.broken.has(root + server.id)) continue
 
-      const match = s.clients.find((x) => x.root === root && x.serverID === server.id)
+      const match = s.clients.find(
+        (x) => x.root === root && x.serverID === server.id,
+      )
       if (match) {
         result.push(match)
         continue
@@ -139,7 +142,9 @@ export namespace LSP {
       }).catch((err) => {
         s.broken.add(root + server.id)
         handle.process.kill()
-        log.error(`Failed to initialize LSP client ${server.id}`, { error: err })
+        log.error(`Failed to initialize LSP client ${server.id}`, {
+          error: err,
+        })
         return undefined
       })
       if (!client) continue
@@ -153,7 +158,9 @@ export namespace LSP {
     const clients = await getClients(input)
     await run(async (client) => {
       if (!clients.includes(client)) return
-      const wait = waitForDiagnostics ? client.waitForDiagnostics({ path: input }) : Promise.resolve()
+      const wait = waitForDiagnostics
+        ? client.waitForDiagnostics({ path: input })
+        : Promise.resolve()
       await client.notify.open({ path: input })
       return wait
     })
@@ -171,7 +178,11 @@ export namespace LSP {
     return results
   }
 
-  export async function hover(input: { file: string; line: number; character: number }) {
+  export async function hover(input: {
+    file: string
+    line: number
+    character: number
+  }) {
     return run((client) => {
       return client.connection.sendRequest("textDocument/hover", {
         textDocument: {
@@ -231,7 +242,9 @@ export namespace LSP {
         .sendRequest("workspace/symbol", {
           query,
         })
-        .then((result: any) => result.filter((x: LSP.Symbol) => kinds.includes(x.kind)))
+        .then((result: any) =>
+          result.filter((x: LSP.Symbol) => kinds.includes(x.kind)),
+        )
         .then((result: any) => result.slice(0, 10))
         .catch(() => []),
     ).then((result) => result.flat() as LSP.Symbol[])
@@ -251,7 +264,9 @@ export namespace LSP {
       .then((result) => result.filter(Boolean))
   }
 
-  async function run<T>(input: (client: LSPClient.Info) => Promise<T>): Promise<T[]> {
+  async function run<T>(
+    input: (client: LSPClient.Info) => Promise<T>,
+  ): Promise<T[]> {
     const clients = await state().then((x) => x.clients)
     const tasks = clients.map((x) => input(x))
     return Promise.all(tasks)

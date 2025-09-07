@@ -4,9 +4,15 @@ import { unique } from "remeda"
 export namespace ProviderTransform {
   function normalizeToolCallIds(msgs: ModelMessage[]): ModelMessage[] {
     return msgs.map((msg) => {
-      if ((msg.role === "assistant" || msg.role === "tool") && Array.isArray(msg.content)) {
+      if (
+        (msg.role === "assistant" || msg.role === "tool") &&
+        Array.isArray(msg.content)
+      ) {
         msg.content = msg.content.map((part) => {
-          if ((part.type === "tool-call" || part.type === "tool-result") && "toolCallId" in part) {
+          if (
+            (part.type === "tool-call" || part.type === "tool-result") &&
+            "toolCallId" in part
+          ) {
             return {
               ...part,
               toolCallId: part.toolCallId.replace(/[^a-zA-Z0-9_-]/g, "_"),
@@ -19,7 +25,10 @@ export namespace ProviderTransform {
     })
   }
 
-  function applyCaching(msgs: ModelMessage[], providerID: string): ModelMessage[] {
+  function applyCaching(
+    msgs: ModelMessage[],
+    providerID: string,
+  ): ModelMessage[] {
     const system = msgs.filter((msg) => msg.role === "system").slice(0, 2)
     const final = msgs.filter((msg) => msg.role !== "system").slice(-2)
 
@@ -39,7 +48,10 @@ export namespace ProviderTransform {
     }
 
     for (const msg of unique([...system, ...final])) {
-      const shouldUseContentOptions = providerID !== "anthropic" && Array.isArray(msg.content) && msg.content.length > 0
+      const shouldUseContentOptions =
+        providerID !== "anthropic" &&
+        Array.isArray(msg.content) &&
+        msg.content.length > 0
 
       if (shouldUseContentOptions) {
         const lastContent = msg.content[msg.content.length - 1]
@@ -61,11 +73,19 @@ export namespace ProviderTransform {
     return msgs
   }
 
-  export function message(msgs: ModelMessage[], providerID: string, modelID: string) {
+  export function message(
+    msgs: ModelMessage[],
+    providerID: string,
+    modelID: string,
+  ) {
     if (modelID.includes("claude")) {
       msgs = normalizeToolCallIds(msgs)
     }
-    if (providerID === "anthropic" || modelID.includes("anthropic") || modelID.includes("claude")) {
+    if (
+      providerID === "anthropic" ||
+      modelID.includes("anthropic") ||
+      modelID.includes("claude")
+    ) {
       msgs = applyCaching(msgs, providerID)
     }
 
@@ -83,7 +103,11 @@ export namespace ProviderTransform {
     return undefined
   }
 
-  export function options(providerID: string, modelID: string, sessionID: string): Record<string, any> | undefined {
+  export function options(
+    providerID: string,
+    modelID: string,
+    sessionID: string,
+  ): Record<string, any> | undefined {
     const result: Record<string, any> = {}
 
     if (providerID === "openai") {

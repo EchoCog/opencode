@@ -13,5 +13,8 @@ export const KeyTable = mysqlTable(
     key: varchar("key", { length: 255 }).notNull(),
     timeUsed: utc("time_used"),
   },
-  (table) => [...workspaceIndexes(table), uniqueIndex("global_key").on(table.key)],
+  (table) => [
+    ...workspaceIndexes(table),
+    uniqueIndex("global_key").on(table.key),
+  ],
 )

@@ -1,4 +1,9 @@
-import { primaryKey, mysqlTable, uniqueIndex, varchar } from "drizzle-orm/mysql-core"
+import {
+  primaryKey,
+  mysqlTable,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core"
 import { timestamps, ulid } from "../drizzle/types"
 
 export const WorkspaceTable = mysqlTable(

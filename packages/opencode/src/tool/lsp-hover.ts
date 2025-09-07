@@ -13,7 +13,9 @@ export const LspHoverTool = Tool.define("lsp_hover", {
     character: z.number().describe("The character number to get diagnostics."),
   }),
   execute: async (args) => {
-    const file = path.isAbsolute(args.file) ? args.file : path.join(Instance.directory, args.file)
+    const file = path.isAbsolute(args.file)
+      ? args.file
+      : path.join(Instance.directory, args.file)
     await LSP.touchFile(file, true)
     const result = await LSP.hover({
       ...args,
@@ -21,7 +23,12 @@ export const LspHoverTool = Tool.define("lsp_hover", {
     })
 
     return {
-      title: path.relative(Instance.worktree, file) + ":" + args.line + ":" + args.character,
+      title:
+        path.relative(Instance.worktree, file) +
+        ":" +
+        args.line +
+        ":" +
+        args.character,
       metadata: {
         result,
       },

@@ -3,17 +3,15 @@ import { createContext, useContext, type ParentProps } from "solid-js"
 
 type Route =
   | {
-    type: "home"
-  }
+      type: "home"
+    }
   | {
-    type: "session"
-    sessionID: string
-  }
+      type: "session"
+      sessionID: string
+    }
 
 function init() {
-  const [store, setStore] = createStore<Route>(
-    { type: "home", }
-  )
+  const [store, setStore] = createStore<Route>({ type: "home" })
 
   return {
     get data() {

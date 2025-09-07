@@ -1202,7 +1202,8 @@ export type ProjectListResponses = {
   200: Array<Project>
 }
 
-export type ProjectListResponse = ProjectListResponses[keyof ProjectListResponses]
+export type ProjectListResponse =
+  ProjectListResponses[keyof ProjectListResponses]
 
 export type ProjectCurrentData = {
   body?: never
@@ -1220,7 +1221,8 @@ export type ProjectCurrentResponses = {
   200: Project
 }
 
-export type ProjectCurrentResponse = ProjectCurrentResponses[keyof ProjectCurrentResponses]
+export type ProjectCurrentResponse =
+  ProjectCurrentResponses[keyof ProjectCurrentResponses]
 
 export type EventSubscribeData = {
   body?: never
@@ -1238,7 +1240,8 @@ export type EventSubscribeResponses = {
   200: Event
 }
 
-export type EventSubscribeResponse = EventSubscribeResponses[keyof EventSubscribeResponses]
+export type EventSubscribeResponse =
+  EventSubscribeResponses[keyof EventSubscribeResponses]
 
 export type ConfigGetData = {
   body?: never
@@ -1292,7 +1295,8 @@ export type SessionListResponses = {
   200: Array<Session>
 }
 
-export type SessionListResponse = SessionListResponses[keyof SessionListResponses]
+export type SessionListResponse =
+  SessionListResponses[keyof SessionListResponses]
 
 export type SessionCreateData = {
   body?: {
@@ -1322,7 +1326,8 @@ export type SessionCreateResponses = {
   200: Session
 }
 
-export type SessionCreateResponse = SessionCreateResponses[keyof SessionCreateResponses]
+export type SessionCreateResponse =
+  SessionCreateResponses[keyof SessionCreateResponses]
 
 export type SessionDeleteData = {
   body?: never
@@ -1342,7 +1347,8 @@ export type SessionDeleteResponses = {
   200: boolean
 }
 
-export type SessionDeleteResponse = SessionDeleteResponses[keyof SessionDeleteResponses]
+export type SessionDeleteResponse =
+  SessionDeleteResponses[keyof SessionDeleteResponses]
 
 export type SessionGetData = {
   body?: never
@@ -1384,7 +1390,8 @@ export type SessionUpdateResponses = {
   200: Session
 }
 
-export type SessionUpdateResponse = SessionUpdateResponses[keyof SessionUpdateResponses]
+export type SessionUpdateResponse =
+  SessionUpdateResponses[keyof SessionUpdateResponses]
 
 export type SessionChildrenData = {
   body?: never
@@ -1404,7 +1411,8 @@ export type SessionChildrenResponses = {
   200: Array<Session>
 }
 
-export type SessionChildrenResponse = SessionChildrenResponses[keyof SessionChildrenResponses]
+export type SessionChildrenResponse =
+  SessionChildrenResponses[keyof SessionChildrenResponses]
 
 export type SessionInitData = {
   body?: {
@@ -1431,7 +1439,8 @@ export type SessionInitResponses = {
   200: boolean
 }
 
-export type SessionInitResponse = SessionInitResponses[keyof SessionInitResponses]
+export type SessionInitResponse =
+  SessionInitResponses[keyof SessionInitResponses]
 
 export type SessionAbortData = {
   body?: never
@@ -1451,7 +1460,8 @@ export type SessionAbortResponses = {
   200: boolean
 }
 
-export type SessionAbortResponse = SessionAbortResponses[keyof SessionAbortResponses]
+export type SessionAbortResponse =
+  SessionAbortResponses[keyof SessionAbortResponses]
 
 export type SessionUnshareData = {
   body?: never
@@ -1471,7 +1481,8 @@ export type SessionUnshareResponses = {
   200: Session
 }
 
-export type SessionUnshareResponse = SessionUnshareResponses[keyof SessionUnshareResponses]
+export type SessionUnshareResponse =
+  SessionUnshareResponses[keyof SessionUnshareResponses]
 
 export type SessionShareData = {
   body?: never
@@ -1491,7 +1502,8 @@ export type SessionShareResponses = {
   200: Session
 }
 
-export type SessionShareResponse = SessionShareResponses[keyof SessionShareResponses]
+export type SessionShareResponse =
+  SessionShareResponses[keyof SessionShareResponses]
 
 export type SessionSummarizeData = {
   body?: {
@@ -1517,7 +1529,8 @@ export type SessionSummarizeResponses = {
   200: boolean
 }
 
-export type SessionSummarizeResponse = SessionSummarizeResponses[keyof SessionSummarizeResponses]
+export type SessionSummarizeResponse =
+  SessionSummarizeResponses[keyof SessionSummarizeResponses]
 
 export type SessionMessagesData = {
   body?: never
@@ -1543,7 +1556,8 @@ export type SessionMessagesResponses = {
   }>
 }
 
-export type SessionMessagesResponse = SessionMessagesResponses[keyof SessionMessagesResponses]
+export type SessionMessagesResponse =
+  SessionMessagesResponses[keyof SessionMessagesResponses]
 
 export type SessionPromptData = {
   body?: {
@@ -1591,7 +1605,8 @@ export type SessionPromptResponses = {
   }
 }
 
-export type SessionPromptResponse = SessionPromptResponses[keyof SessionPromptResponses]
+export type SessionPromptResponse =
+  SessionPromptResponses[keyof SessionPromptResponses]
 
 export type SessionMessageData = {
   body?: never
@@ -1621,7 +1636,8 @@ export type SessionMessageResponses = {
   }
 }
 
-export type SessionMessageResponse = SessionMessageResponses[keyof SessionMessageResponses]
+export type SessionMessageResponse =
+  SessionMessageResponses[keyof SessionMessageResponses]
 
 export type SessionCommandData = {
   body?: {
@@ -1653,7 +1669,8 @@ export type SessionCommandResponses = {
   }
 }
 
-export type SessionCommandResponse = SessionCommandResponses[keyof SessionCommandResponses]
+export type SessionCommandResponse =
+  SessionCommandResponses[keyof SessionCommandResponses]
 
 export type SessionShellData = {
   body?: {
@@ -1679,7 +1696,8 @@ export type SessionShellResponses = {
   200: AssistantMessage
 }
 
-export type SessionShellResponse = SessionShellResponses[keyof SessionShellResponses]
+export type SessionShellResponse =
+  SessionShellResponses[keyof SessionShellResponses]
 
 export type SessionRevertData = {
   body?: {
@@ -1702,7 +1720,8 @@ export type SessionRevertResponses = {
   200: Session
 }
 
-export type SessionRevertResponse = SessionRevertResponses[keyof SessionRevertResponses]
+export type SessionRevertResponse =
+  SessionRevertResponses[keyof SessionRevertResponses]
 
 export type SessionUnrevertData = {
   body?: never
@@ -1722,7 +1741,8 @@ export type SessionUnrevertResponses = {
   200: Session
 }
 
-export type SessionUnrevertResponse = SessionUnrevertResponses[keyof SessionUnrevertResponses]
+export type SessionUnrevertResponse =
+  SessionUnrevertResponses[keyof SessionUnrevertResponses]
 
 export type PostSessionByIdPermissionsByPermissionIdData = {
   body?: {
@@ -1764,7 +1784,8 @@ export type CommandListResponses = {
   200: Array<Command>
 }
 
-export type CommandListResponse = CommandListResponses[keyof CommandListResponses]
+export type CommandListResponse =
+  CommandListResponses[keyof CommandListResponses]
 
 export type ConfigProvidersData = {
   body?: never
@@ -1787,7 +1808,8 @@ export type ConfigProvidersResponses = {
   }
 }
 
-export type ConfigProvidersResponse = ConfigProvidersResponses[keyof ConfigProvidersResponses]
+export type ConfigProvidersResponse =
+  ConfigProvidersResponses[keyof ConfigProvidersResponses]
 
 export type FindTextData = {
   body?: never
@@ -1860,7 +1882,8 @@ export type FindSymbolsResponses = {
   200: Array<Symbol>
 }
 
-export type FindSymbolsResponse = FindSymbolsResponses[keyof FindSymbolsResponses]
+export type FindSymbolsResponse =
+  FindSymbolsResponses[keyof FindSymbolsResponses]
 
 export type FileListData = {
   body?: never
@@ -1994,7 +2017,8 @@ export type TuiAppendPromptResponses = {
   200: boolean
 }
 
-export type TuiAppendPromptResponse = TuiAppendPromptResponses[keyof TuiAppendPromptResponses]
+export type TuiAppendPromptResponse =
+  TuiAppendPromptResponses[keyof TuiAppendPromptResponses]
 
 export type TuiOpenHelpData = {
   body?: never
@@ -2012,7 +2036,8 @@ export type TuiOpenHelpResponses = {
   200: boolean
 }
 
-export type TuiOpenHelpResponse = TuiOpenHelpResponses[keyof TuiOpenHelpResponses]
+export type TuiOpenHelpResponse =
+  TuiOpenHelpResponses[keyof TuiOpenHelpResponses]
 
 export type TuiOpenSessionsData = {
   body?: never
@@ -2030,7 +2055,8 @@ export type TuiOpenSessionsResponses = {
   200: boolean
 }
 
-export type TuiOpenSessionsResponse = TuiOpenSessionsResponses[keyof TuiOpenSessionsResponses]
+export type TuiOpenSessionsResponse =
+  TuiOpenSessionsResponses[keyof TuiOpenSessionsResponses]
 
 export type TuiOpenThemesData = {
   body?: never
@@ -2048,7 +2074,8 @@ export type TuiOpenThemesResponses = {
   200: boolean
 }
 
-export type TuiOpenThemesResponse = TuiOpenThemesResponses[keyof TuiOpenThemesResponses]
+export type TuiOpenThemesResponse =
+  TuiOpenThemesResponses[keyof TuiOpenThemesResponses]
 
 export type TuiOpenModelsData = {
   body?: never
@@ -2066,7 +2093,8 @@ export type TuiOpenModelsResponses = {
   200: boolean
 }
 
-export type TuiOpenModelsResponse = TuiOpenModelsResponses[keyof TuiOpenModelsResponses]
+export type TuiOpenModelsResponse =
+  TuiOpenModelsResponses[keyof TuiOpenModelsResponses]
 
 export type TuiSubmitPromptData = {
   body?: never
@@ -2084,7 +2112,8 @@ export type TuiSubmitPromptResponses = {
   200: boolean
 }
 
-export type TuiSubmitPromptResponse = TuiSubmitPromptResponses[keyof TuiSubmitPromptResponses]
+export type TuiSubmitPromptResponse =
+  TuiSubmitPromptResponses[keyof TuiSubmitPromptResponses]
 
 export type TuiClearPromptData = {
   body?: never
@@ -2102,7 +2131,8 @@ export type TuiClearPromptResponses = {
   200: boolean
 }
 
-export type TuiClearPromptResponse = TuiClearPromptResponses[keyof TuiClearPromptResponses]
+export type TuiClearPromptResponse =
+  TuiClearPromptResponses[keyof TuiClearPromptResponses]
 
 export type TuiExecuteCommandData = {
   body?: {
@@ -2122,7 +2152,8 @@ export type TuiExecuteCommandResponses = {
   200: boolean
 }
 
-export type TuiExecuteCommandResponse = TuiExecuteCommandResponses[keyof TuiExecuteCommandResponses]
+export type TuiExecuteCommandResponse =
+  TuiExecuteCommandResponses[keyof TuiExecuteCommandResponses]
 
 export type TuiShowToastData = {
   body?: {
@@ -2144,7 +2175,8 @@ export type TuiShowToastResponses = {
   200: boolean
 }
 
-export type TuiShowToastResponse = TuiShowToastResponses[keyof TuiShowToastResponses]
+export type TuiShowToastResponse =
+  TuiShowToastResponses[keyof TuiShowToastResponses]
 
 export type AuthSetData = {
   body?: Auth

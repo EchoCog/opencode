@@ -1,5 +1,12 @@
 import { useKeyHandler, useTerminalDimensions } from "@opentui/solid"
-import { createContext, For, Show, useContext, type JSX, type ParentProps } from "solid-js"
+import {
+  createContext,
+  For,
+  Show,
+  useContext,
+  type JSX,
+  type ParentProps,
+} from "solid-js"
 import { Theme } from "../context/theme"
 import { RGBA } from "@opentui/core"
 import { createStore, produce } from "solid-js/store"
@@ -17,14 +24,15 @@ const Border = {
   rightT: "+",
   cross: "+",
 }
-export function Dialog(props: ParentProps<{
-  size?: "medium" | "large"
-}>) {
+export function Dialog(
+  props: ParentProps<{
+    size?: "medium" | "large"
+  }>,
+) {
   const dimensions = useTerminalDimensions()
 
   return (
     <box
-
       width={dimensions().width}
       height={dimensions().height}
       alignItems="center"
@@ -35,7 +43,6 @@ export function Dialog(props: ParentProps<{
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
     >
       <box
-
         customBorderChars={Border}
         width={props.size === "large" ? 80 : 60}
         maxWidth={dimensions().width - 2}
@@ -57,10 +64,7 @@ function init() {
 
   useKeyHandler((evt) => {
     if (evt.name === "escape") {
-      setStore(
-        "stack",
-        store.stack.slice(0, -1),
-      )
+      setStore("stack", store.stack.slice(0, -1))
     }
   })
 
@@ -68,22 +72,16 @@ function init() {
     push(input: JSX.Element) {
       setStore(
         "stack",
-        produce(val => val.push(input)),
+        produce((val) => val.push(input)),
       )
     },
     clear() {
       setStore("size", "medium")
-      setStore(
-        "stack",
-        [],
-      )
+      setStore("stack", [])
     },
     replace(input: JSX.Element) {
       setStore("size", "medium")
-      setStore(
-        "stack",
-        [input],
-      )
+      setStore("stack", [input])
     },
     get stack() {
       return store.stack
@@ -108,13 +106,11 @@ export function DialogProvider(props: ParentProps) {
       {props.children}
       <box position="absolute">
         <For each={value.stack}>
-          {(item, index) =>
+          {(item, index) => (
             <Show when={index() === 0}>
-              <Dialog size={value.size}>
-                {item}
-              </Dialog>
+              <Dialog size={value.size}>{item}</Dialog>
             </Show>
-          }
+          )}
         </For>
       </box>
     </ctx.Provider>

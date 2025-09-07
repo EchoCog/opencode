@@ -1,4 +1,4 @@
-import { Theme } from "../context/theme";
+import { Theme } from "../context/theme"
 
 export const SplitBorder = {
   border: ["left" as const, "right" as const],
@@ -15,6 +15,5 @@ export const SplitBorder = {
     cross: "",
     leftT: "",
     rightT: "",
-  }
+  },
 }
-

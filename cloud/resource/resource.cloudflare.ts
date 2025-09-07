@@ -9,7 +9,9 @@ export const Resource = new Proxy(
         const value = env[prop]
         return typeof value === "string" ? JSON.parse(value) : value
       }
-      throw new Error(`"${prop}" is not linked in your sst.config.ts (cloudflare)`)
+      throw new Error(
+        `"${prop}" is not linked in your sst.config.ts (cloudflare)`,
+      )
     },
   },
 ) as Record<string, any>

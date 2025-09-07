@@ -8,7 +8,10 @@ import { readableStreamToText } from "bun"
 export namespace BunProc {
   const log = Log.create({ service: "bun" })
 
-  export async function run(cmd: string[], options?: Bun.SpawnOptions.OptionsObject<any, any, any>) {
+  export async function run(
+    cmd: string[],
+    options?: Bun.SpawnOptions.OptionsObject<any, any, any>,
+  ) {
     log.info("running", {
       cmd: [which(), ...cmd],
       ...options,
@@ -68,13 +71,23 @@ export namespace BunProc {
     if (parsed.dependencies[pkg] === version) return mod
 
     // Build command arguments
-    const args = ["add", "--force", "--exact", "--cwd", Global.Path.cache, pkg + "@" + version]
+    const args = [
+      "add",
+      "--force",
+      "--exact",
+      "--cwd",
+      Global.Path.cache,
+      pkg + "@" + version,
+    ]
 
     // Let Bun handle registry resolution:
     // - If .npmrc files exist, Bun will use them automatically
     // - If no .npmrc files exist, Bun will default to https://registry.npmjs.org
     // - No need to pass --registry flag
-    log.info("installing package using Bun's default registry resolution", { pkg, version })
+    log.info("installing package using Bun's default registry resolution", {
+      pkg,
+      version,
+    })
 
     await BunProc.run(args, {
       cwd: Global.Path.cache,

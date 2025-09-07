@@ -61,12 +61,18 @@ export namespace Provider {
       }
     },
     "amazon-bedrock": async () => {
-      if (!process.env["AWS_PROFILE"] && !process.env["AWS_ACCESS_KEY_ID"] && !process.env["AWS_BEARER_TOKEN_BEDROCK"])
+      if (
+        !process.env["AWS_PROFILE"] &&
+        !process.env["AWS_ACCESS_KEY_ID"] &&
+        !process.env["AWS_BEARER_TOKEN_BEDROCK"]
+      )
         return { autoload: false }
 
       const region = process.env["AWS_REGION"] ?? "us-east-1"
 
-      const { fromNodeProviderChain } = await import(await BunProc.install("@aws-sdk/credential-providers"))
+      const { fromNodeProviderChain } = await import(
+        await BunProc.install("@aws-sdk/credential-providers")
+      )
       return {
         autoload: true,
         options: {
@@ -78,7 +84,9 @@ export namespace Provider {
 
           switch (regionPrefix) {
             case "us": {
-              const modelRequiresPrefix = ["claude", "deepseek"].some((m) => modelID.includes(m))
+              const modelRequiresPrefix = ["claude", "deepseek"].some((m) =>
+                modelID.includes(m),
+              )
               if (modelRequiresPrefix) {
                 modelID = `${regionPrefix}.${modelID}`
               }
@@ -93,18 +101,25 @@ export namespace Provider {
                 "eu-south-1",
                 "eu-south-2",
               ].some((r) => region.includes(r))
-              const modelRequiresPrefix = ["claude", "nova-lite", "nova-micro", "llama3", "pixtral"].some((m) =>
-                modelID.includes(m),
-              )
+              const modelRequiresPrefix = [
+                "claude",
+                "nova-lite",
+                "nova-micro",
+                "llama3",
+                "pixtral",
+              ].some((m) => modelID.includes(m))
               if (regionRequiresPrefix && modelRequiresPrefix) {
                 modelID = `${regionPrefix}.${modelID}`
               }
               break
             }
             case "ap": {
-              const modelRequiresPrefix = ["claude", "nova-lite", "nova-micro", "nova-pro"].some((m) =>
-                modelID.includes(m),
-              )
+              const modelRequiresPrefix = [
+                "claude",
+                "nova-lite",
+                "nova-micro",
+                "nova-pro",
+              ].some((m) => modelID.includes(m))
               if (modelRequiresPrefix) {
                 regionPrefix = "apac"
                 modelID = `${regionPrefix}.${modelID}`
@@ -155,7 +170,12 @@ export namespace Provider {
     } = {}
     const models = new Map<
       string,
-      { providerID: string; modelID: string; info: ModelsDev.Model; language: LanguageModel }
+      {
+        providerID: string
+        modelID: string
+        info: ModelsDev.Model
+        language: LanguageModel
+      }
     >()
     const sdk = new Map<string, SDK>()
 
@@ -237,7 +257,9 @@ export namespace Provider {
       database[providerID] = parsed
     }
 
-    const disabled = await Config.get().then((cfg) => new Set(cfg.disabled_providers ?? []))
+    const disabled = await Config.get().then(
+      (cfg) => new Set(cfg.disabled_providers ?? []),
+    )
     // load env
     for (const [providerID, provider] of Object.entries(database)) {
       if (disabled.has(providerID)) continue
@@ -264,7 +286,12 @@ export namespace Provider {
       if (disabled.has(providerID)) continue
       const result = await fn(database[providerID])
       if (result && (result.autoload || providers[providerID])) {
-        mergeProvider(providerID, result.options ?? {}, "custom", result.getModel)
+        mergeProvider(
+          providerID,
+          result.options ?? {},
+          "custom",
+          result.getModel,
+        )
       }
     }
 
@@ -275,7 +302,10 @@ export namespace Provider {
       const auth = await Auth.get(providerID)
       if (!auth) continue
       if (!plugin.auth.loader) continue
-      const options = await plugin.auth.loader(() => Auth.get(providerID) as any, database[plugin.auth.provider])
+      const options = await plugin.auth.loader(
+        () => Auth.get(providerID) as any,
+        database[plugin.auth.provider],
+      )
       mergeProvider(plugin.auth.provider, options ?? {}, "custom")
     }
 
@@ -289,7 +319,8 @@ export namespace Provider {
       const filteredModels = Object.fromEntries(
         Object.entries(provider.info.models).filter(
           ([modelID]) =>
-            modelID !== "gpt-5-chat-latest" && !(providerID === "openrouter" && modelID === "openai/gpt-5-chat"),
+            modelID !== "gpt-5-chat-latest" &&
+            !(providerID === "openrouter" && modelID === "openai/gpt-5-chat"),
         ),
       )
       provider.info.models = filteredModels
@@ -362,7 +393,9 @@ export namespace Provider {
     const sdk = await getSDK(provider.info)
 
     try {
-      const language = provider.getModel ? await provider.getModel(sdk, modelID) : sdk.languageModel(modelID)
+      const language = provider.getModel
+        ? await provider.getModel(sdk, modelID)
+        : sdk.languageModel(modelID)
       log.info("found", { providerID, modelID })
       s.models.set(key, {
         providerID,
@@ -399,7 +432,12 @@ export namespace Provider {
 
     const provider = await state().then((state) => state.providers[providerID])
     if (!provider) return
-    const priority = ["3-5-haiku", "3.5-haiku", "gemini-2.5-flash", "gpt-5-nano"]
+    const priority = [
+      "3-5-haiku",
+      "3.5-haiku",
+      "gemini-2.5-flash",
+      "gpt-5-nano",
+    ]
     for (const item of priority) {
       for (const model of Object.keys(provider.info.models)) {
         if (model.includes(item)) return getModel(providerID, model)
@@ -411,7 +449,10 @@ export namespace Provider {
   export function sort(models: ModelsDev.Model[]) {
     return sortBy(
       models,
-      [(model) => priority.findIndex((filter) => model.id.includes(filter)), "desc"],
+      [
+        (model) => priority.findIndex((filter) => model.id.includes(filter)),
+        "desc",
+      ],
       [(model) => (model.id.includes("latest") ? 0 : 1), "asc"],
       [(model) => model.id, "desc"],
     )
@@ -422,7 +463,11 @@ export namespace Provider {
     if (cfg.model) return parseModel(cfg.model)
     const provider = await list()
       .then((val) => Object.values(val))
-      .then((x) => x.find((p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id)))
+      .then((x) =>
+        x.find(
+          (p) => !cfg.provider || Object.keys(cfg.provider).includes(p.info.id),
+        ),
+      )
     if (!provider) throw new Error("no providers found")
     const [model] = sort(Object.values(provider.info.models))
     if (!model) throw new Error("no models found")

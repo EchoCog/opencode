@@ -12,7 +12,11 @@ export namespace Agent {
     .object({
       name: z.string(),
       description: z.string().optional(),
-      mode: z.union([z.literal("subagent"), z.literal("primary"), z.literal("all")]),
+      mode: z.union([
+        z.literal("subagent"),
+        z.literal("primary"),
+        z.literal("all"),
+      ]),
       builtIn: z.boolean(),
       topP: z.number().optional(),
       temperature: z.number().optional(),
@@ -46,7 +50,10 @@ export namespace Agent {
       },
       webfetch: "allow",
     }
-    const agentPermission = mergeAgentPermissions(defaultPermission, cfg.permission ?? {})
+    const agentPermission = mergeAgentPermissions(
+      defaultPermission,
+      cfg.permission ?? {},
+    )
 
     const planPermission = mergeAgentPermissions(
       {
@@ -106,7 +113,18 @@ export namespace Agent {
           tools: {},
           builtIn: false,
         }
-      const { name, model, prompt, tools, description, temperature, top_p, mode, permission, ...extra } = value
+      const {
+        name,
+        model,
+        prompt,
+        tools,
+        description,
+        temperature,
+        top_p,
+        mode,
+        permission,
+        ...extra
+      } = value
       item.options = {
         ...item.options,
         ...extra,
@@ -130,7 +148,10 @@ export namespace Agent {
       if (name) item.name = name
 
       if (permission ?? cfg.permission) {
-        item.permission = mergeAgentPermissions(cfg.permission ?? {}, permission ?? {})
+        item.permission = mergeAgentPermissions(
+          cfg.permission ?? {},
+          permission ?? {},
+        )
       }
     }
     return result
@@ -146,7 +167,10 @@ export namespace Agent {
 
   export async function generate(input: { description: string }) {
     const defaultModel = await Provider.defaultModel()
-    const model = await Provider.getModel(defaultModel.providerID, defaultModel.modelID)
+    const model = await Provider.getModel(
+      defaultModel.providerID,
+      defaultModel.modelID,
+    )
     const system = SystemPrompt.header(defaultModel.providerID)
     system.push(PROMPT_GENERATE)
     const existing = await list()
@@ -175,8 +199,14 @@ export namespace Agent {
   }
 }
 
-function mergeAgentPermissions(basePermission: any, overridePermission: any): Agent.Info["permission"] {
-  const merged = mergeDeep(basePermission ?? {}, overridePermission ?? {}) as any
+function mergeAgentPermissions(
+  basePermission: any,
+  overridePermission: any,
+): Agent.Info["permission"] {
+  const merged = mergeDeep(
+    basePermission ?? {},
+    overridePermission ?? {},
+  ) as any
   let mergedBash
   if (merged.bash) {
     if (typeof merged.bash === "string") {

@@ -11,7 +11,8 @@ export function CopyButton(props: CopyButtonProps) {
 
   function handleCopyClick() {
     if (props.text) {
-      navigator.clipboard.writeText(props.text)
+      navigator.clipboard
+        .writeText(props.text)
         .catch((err) => console.error("Copy failed", err))
 
       setCopied(true)
@@ -26,10 +27,11 @@ export function CopyButton(props: CopyButtonProps) {
         onClick={handleCopyClick}
         data-copied={copied() ? true : undefined}
       >
-        {copied()
-          ? <IconCheckCircle width={16} height={16} />
-          : <IconClipboard width={16} height={16} />
-        }
+        {copied() ? (
+          <IconCheckCircle width={16} height={16} />
+        ) : (
+          <IconClipboard width={16} height={16} />
+        )}
       </button>
     </div>
   )

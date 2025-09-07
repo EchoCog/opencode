@@ -40,18 +40,18 @@ function init() {
     for await (const event of events.stream) {
       switch (event.type) {
         case "session.updated":
-          const result = Binary.search(store.session, event.properties.info.id, (s) => s.id)
-          setStore(
-            "session",
-            result.index,
-            reconcile(event.properties.info),
+          const result = Binary.search(
+            store.session,
+            event.properties.info.id,
+            (s) => s.id,
           )
+          setStore("session", result.index, reconcile(event.properties.info))
           break
         case "message.updated":
           setStore(
             "message",
             produce((draft) => {
-              const messages = draft[event.properties.info.sessionID] ??= []
+              const messages = (draft[event.properties.info.sessionID] ??= [])
               const result = Binary.search(
                 messages,
                 event.properties.info.id,
@@ -69,7 +69,7 @@ function init() {
           setStore(
             "part",
             produce((draft) => {
-              const parts = draft[event.properties.part.messageID] ??= []
+              const parts = (draft[event.properties.part.messageID] ??= [])
               const result = Binary.search(
                 parts,
                 event.properties.part.id,
@@ -80,7 +80,6 @@ function init() {
                 return
               }
               parts.splice(result.index, 0, event.properties.part)
-
             }),
           )
           break
@@ -109,15 +108,17 @@ function init() {
           sdk.session.get({ path: { id: sessionID } }),
           sdk.session.messages({ path: { id: sessionID } }),
         ])
-        setStore(produce((draft) => {
-          const match = Binary.search(draft.session, sessionID, (s) => s.id)
-          draft.session[match.index] = session.data!
-          draft.message[sessionID] = messages.data!.map((x) => x.info)
-          for (const message of messages.data!) {
-            draft.part[message.info.id] = message.parts
-          }
-        }))
-      }
+        setStore(
+          produce((draft) => {
+            const match = Binary.search(draft.session, sessionID, (s) => s.id)
+            draft.session[match.index] = session.data!
+            draft.message[sessionID] = messages.data!.map((x) => x.info)
+            for (const message of messages.data!) {
+              draft.part[message.info.id] = message.parts
+            }
+          }),
+        )
+      },
     },
   }
 }
