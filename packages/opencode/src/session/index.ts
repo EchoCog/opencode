@@ -38,7 +38,6 @@ import { NamedError } from "../util/error"
 import { SystemPrompt } from "./system"
 import { FileTime } from "../file/time"
 import { MessageV2 } from "./message-v2"
-import { LSP } from "../lsp"
 import { ReadTool } from "../tool/read"
 import { mergeDeep, pipe, splitWhen } from "remeda"
 import { ToolRegistry } from "../tool/registry"
@@ -528,38 +527,6 @@ export namespace Session {
               if (part.mime === "text/plain") {
                 let offset: number | undefined = undefined
                 let limit: number | undefined = undefined
-                const range = {
-                  start: url.searchParams.get("start"),
-                  end: url.searchParams.get("end"),
-                }
-                if (range.start != null) {
-                  const filePath = part.url.split("?")[0]
-                  let start = parseInt(range.start)
-                  let end = range.end ? parseInt(range.end) : undefined
-                  // some LSP servers (eg, gopls) don't give full range in
-                  // workspace/symbol searches, so we'll try to find the
-                  // symbol in the document to get the full range
-                  if (start === end) {
-                    const symbols = await LSP.documentSymbol(filePath)
-                    for (const symbol of symbols) {
-                      let range: LSP.Range | undefined
-                      if ("range" in symbol) {
-                        range = symbol.range
-                      } else if ("location" in symbol) {
-                        range = symbol.location.range
-                      }
-                      if (range?.start?.line && range?.start?.line === start) {
-                        start = range.start.line
-                        end = range?.end?.line ?? start
-                        break
-                      }
-                    }
-                    offset = Math.max(start - 2, 0)
-                    if (end) {
-                      limit = end - offset + 2
-                    }
-                  }
-                }
                 const args = { filePath, offset, limit }
                 const result = await ReadTool.init().then((t) =>
                   t.execute(args, {

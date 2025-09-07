@@ -3,7 +3,7 @@ import { useRouteData } from "./context/route"
 import { useSync } from "./context/sync"
 import { SplitBorder } from "./component/border"
 import { Theme } from "./context/theme"
-import { bold, fg, SyntaxStyle } from "@opentui/core"
+import { bold, fg, ScrollBoxRenderable, SyntaxStyle } from "@opentui/core"
 import { Prompt } from "./component/prompt"
 import type {
   AssistantMessage,
@@ -25,9 +25,17 @@ import { BashTool } from "../../../tool/bash"
 export function Session() {
   const route = useRouteData("session")
   const sync = useSync()
+  let scroll: ScrollBoxRenderable
   const session = createMemo(() => sync.session.get(route.sessionID)!)
   const messages = createMemo(() => sync.data.message[route.sessionID] ?? [])
+
   createEffect(() => sync.session.sync(route.sessionID))
+  createEffect(() => {
+    return
+    const messageID = messages().at(-1)?.id
+    sync.data.part[messageID ?? ""]?.at(-1)?.id
+    scroll.scrollTo(scroll.scrollHeight)
+  })
 
   return (
     <box
@@ -62,10 +70,11 @@ export function Session() {
           </box>
         </box>
         <scrollbox
+          ref={(r: any) => scroll = r}
+          scrollbarOptions={{ visible: false }}
           paddingTop={1}
           paddingBottom={1}
           contentOptions={{
-            minWidth: "100%",
             flexGrow: 1,
             gap: 1,
           }}
@@ -98,23 +107,11 @@ export function Session() {
 }
 
 function UserMessage(props: { message: UserMessage; parts: Part[] }) {
-  return (
-    <For each={props.parts}>
-      {(part) => (
-        <Switch>
-          <Match when={part.type === "text"}>
-            <UserTextPart part={part as TextPart} message={props.message} />
-          </Match>
-        </Switch>
-      )}
-    </For>
-  )
-}
-
-function UserTextPart(props: { part: TextPart; message: UserMessage }) {
+  const text = createMemo(() => props.parts.flatMap(x => x.type === "text" && !x.synthetic ? [x] : [])[0])
   const sync = useSync()
   return (
     <box
+      id={text()?.id}
       border={["left"]}
       paddingTop={1}
       paddingBottom={1}
@@ -123,7 +120,7 @@ function UserTextPart(props: { part: TextPart; message: UserMessage }) {
       customBorderChars={SplitBorder.customBorderChars}
       borderColor={Theme.secondary}
     >
-      <text>{props.part.text.trim()}</text>
+      <text>{text()?.text}</text>
       <text>
         {sync.data.config.username ?? "You"}{" "}
         {fg(Theme.textMuted)(
@@ -134,18 +131,21 @@ function UserTextPart(props: { part: TextPart; message: UserMessage }) {
   )
 }
 
+
 function AssistantMessage(props: { message: AssistantMessage; parts: Part[] }) {
   return (
     <For each={props.parts}>
       {(part) => (
-        <Switch>
-          <Match when={part.type === "text"}>
-            <TextPart part={part as TextPart} message={props.message} />
-          </Match>
-          <Match when={part.type === "tool"}>
-            <ToolPart part={part as ToolPart} message={props.message} />
-          </Match>
-        </Switch>
+        <box id={part.id}>
+          <Switch>
+            <Match when={part.type === "text"}>
+              <TextPart part={part as TextPart} message={props.message} />
+            </Match>
+            <Match when={part.type === "tool"}>
+              <ToolPart part={part as ToolPart} message={props.message} />
+            </Match>
+          </Switch>
+        </box>
       )}
     </For>
   )
@@ -288,14 +288,16 @@ const syntax = new SyntaxStyle({
 })
 
 function ReadToolPart(props: ToolProps<typeof ReadTool>) {
-  const hast = createMemo(() =>
-    props.metadata["preview"]
+  const hast = createMemo(() => {
+    const text = props.metadata.preview
       ? highlight.highlightHast(
-          props.metadata["preview"],
-          highlight.Language.TS,
-        )
-      : "",
-  )
+        props.metadata.preview,
+        highlight.Language.TS,
+      )
+      : ""
+    const styled = hastToStyledText(text as any, syntax)
+    return styled
+  })
   return (
     <>
       <text fg={Theme.textMuted}>Read {props.input["filePath"]}</text>

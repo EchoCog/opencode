@@ -24,11 +24,19 @@ import { useSDK } from "../context/sdk"
 import { useRoute } from "../context/route"
 import { useSync } from "../context/sync"
 import { Identifier } from "../../../../id/id"
-import { createStore } from "solid-js/store"
+import { createStore, produce } from "solid-js/store"
+import type { FilePart } from "@opencode-ai/sdk"
+import { Instance } from "../../../../project/instance"
 
 export type PromptProps = {
   sessionID?: string
 }
+
+type Prompt = {
+  input: string
+  parts: Omit<FilePart, "id" | "messageID" | "sessionID">[]
+}
+
 export function Prompt(props: PromptProps) {
   let input: InputRenderable
   let anchor: BoxRenderable
@@ -40,8 +48,9 @@ export function Prompt(props: PromptProps) {
   const route = useRoute()
   const sync = useSync()
 
-  const [store, setStore] = createStore({
+  const [store, setStore] = createStore<Prompt>({
     input: "",
+    parts: [],
   })
 
   const messages = createMemo(() => {
@@ -65,8 +74,8 @@ export function Prompt(props: PromptProps) {
       <Autocomplete
         ref={(r) => (autocomplete = r)}
         anchor={() => anchor}
-        setInput={(cb) => {
-          setStore("input", cb)
+        setPrompt={(cb) => {
+          setStore(produce(cb))
           input.cursorPosition = store.input.length
         }}
         value={store.input}
@@ -97,41 +106,71 @@ export function Prompt(props: PromptProps) {
               value={store.input}
               onKeyDown={(e) => {
                 autocomplete.onKeyDown(e)
+                const old = input.cursorPosition
+                setTimeout(() => {
+                  const position = input.cursorPosition
+                  const direction = Math.sign(old - position)
+                  for (const part of store.parts) {
+                    if (part.source && part.source.type === "file") {
+                      console.log({
+                        old,
+                        position,
+                        start: part.source.text.start,
+                        end: part.source.text.end,
+                      })
+                      if (part.source.text.start <= position && position <= part.source.text.end) {
+                        input.cursorPosition = part.source.text.start
+                      }
+                    }
+                  }
+                }, 0)
               }}
-              onSubmit={async (val) => {
+              onSubmit={async () => {
                 if (autocomplete.visible) return
-                console.log("submitting")
-                input.value = ""
-                console.log({ sessionID: props.sessionID })
                 const sessionID = props.sessionID
                   ? props.sessionID
                   : await (async () => {
-                      const sessionID = await sdk.session
-                        .create({})
-                        .then((x) => x.data!.id)
-                      route.navigate({
-                        type: "session",
-                        sessionID,
-                      })
-                      return sessionID
-                    })()
+                    const sessionID = await sdk.session
+                      .create({})
+                      .then((x) => x.data!.id)
+                    route.navigate({
+                      type: "session",
+                      sessionID,
+                    })
+                    return sessionID
+                  })()
+                const messageID = Identifier.ascending("message")
+                const input = store.input
+                const parts = store.parts
+                setStore({
+                  input: "",
+                  parts: [],
+                })
+                console.log("prompting", sessionID)
                 await sdk.session.prompt({
                   path: {
                     id: sessionID,
                   },
                   body: {
                     ...local.model.current(),
-                    messageID: Identifier.ascending("message"),
+                    messageID,
                     agent: local.agent.current().name,
                     model: local.model.current(),
                     parts: [
                       {
+                        id: Identifier.ascending("part"),
                         type: "text",
-                        text: val,
+                        text: input,
                       },
+                      ...parts.map((x) => ({
+                        id: Identifier.ascending("part"),
+                        ...x,
+                      })),
                     ],
                   },
                 })
+                  .then(console.log)
+                  .catch(console.log)
               }}
               ref={(r) => (input = r)}
               onMouseDown={(r) => r.target?.focus()}
@@ -179,7 +218,7 @@ type AutocompleteRef = {
 
 function Autocomplete(props: {
   value: string
-  setInput: (input: (value: string) => string) => void
+  setPrompt: (input: (prompt: Prompt) => void) => void
   anchor: () => BoxRenderable
   ref: (ref: AutocompleteRef) => void
 }) {
@@ -205,8 +244,7 @@ function Autocomplete(props: {
         },
       })
       if (result.error) return []
-      const sliced = (result.data ?? []).slice(0, 5)
-      return sliced
+      return result.data ?? []
     },
     {
       initialValue: [],
@@ -256,10 +294,30 @@ function Autocomplete(props: {
           if (e.name === "down") move(1)
           if (e.name === "escape") hide()
           if (e.name === "return") {
-            props.setInput((val) => {
-              const append = files()[store.selected] + " "
-              if (store.index === 0) return append
-              return val.slice(0, store.index) + append
+            const file = files()[store.selected]
+            if (!file) return
+            console.log("file", file)
+            const part: Prompt["parts"][number] = {
+              type: "file",
+              mime: "text/plain",
+              filename: file,
+              url: `file://${Instance.directory}/${file}`,
+              source: {
+                type: "file",
+                text: {
+                  start: store.index,
+                  end: store.index + file.length,
+                  value: file,
+                },
+                path: file,
+              },
+            }
+            props.setPrompt((draft) => {
+              const append = file + " "
+              if (store.index === 0) draft.input = append
+              if (store.index > 0)
+                draft.input = draft.input.slice(0, store.index) + append
+              draft.parts.push(part)
             })
             setTimeout(() => hide(), 0)
           }
@@ -274,17 +332,20 @@ function Autocomplete(props: {
     })
   })
 
+  createEffect(() => {
+    console.log(files())
+  })
   return (
     <box
       visible={store.visible}
       position="absolute"
-      top={store.position.y - 5}
+      top={store.position.y - 10}
       left={store.position.x}
       width={store.position.width}
       zIndex={100}
       {...SplitBorder}
     >
-      <box backgroundColor={Theme.backgroundElement} height={5}>
+      <box backgroundColor={Theme.backgroundElement} height={10}>
         <For each={files()}>
           {(file, index) => (
             <box
