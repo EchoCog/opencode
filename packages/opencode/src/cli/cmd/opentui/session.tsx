@@ -70,7 +70,7 @@ export function Session() {
           </box>
         </box>
         <scrollbox
-          ref={(r: any) => scroll = r}
+          ref={(r: any) => (scroll = r)}
           scrollbarOptions={{ visible: false }}
           paddingTop={1}
           paddingBottom={1}
@@ -107,7 +107,12 @@ export function Session() {
 }
 
 function UserMessage(props: { message: UserMessage; parts: Part[] }) {
-  const text = createMemo(() => props.parts.flatMap(x => x.type === "text" && !x.synthetic ? [x] : [])[0])
+  const text = createMemo(
+    () =>
+      props.parts.flatMap((x) =>
+        x.type === "text" && !x.synthetic ? [x] : [],
+      )[0],
+  )
   const sync = useSync()
   return (
     <box
@@ -130,7 +135,6 @@ function UserMessage(props: { message: UserMessage; parts: Part[] }) {
     </box>
   )
 }
-
 
 function AssistantMessage(props: { message: AssistantMessage; parts: Part[] }) {
   return (
@@ -290,10 +294,7 @@ const syntax = new SyntaxStyle({
 function ReadToolPart(props: ToolProps<typeof ReadTool>) {
   const hast = createMemo(() => {
     const text = props.metadata.preview
-      ? highlight.highlightHast(
-        props.metadata.preview,
-        highlight.Language.TS,
-      )
+      ? highlight.highlightHast(props.metadata.preview, highlight.Language.TS)
       : ""
     const styled = hastToStyledText(text as any, syntax)
     return styled

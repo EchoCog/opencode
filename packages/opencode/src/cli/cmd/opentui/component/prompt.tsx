@@ -118,7 +118,10 @@ export function Prompt(props: PromptProps) {
                         start: part.source.text.start,
                         end: part.source.text.end,
                       })
-                      if (part.source.text.start <= position && position <= part.source.text.end) {
+                      if (
+                        part.source.text.start <= position &&
+                        position <= part.source.text.end
+                      ) {
                         input.cursorPosition = part.source.text.start
                       }
                     }
@@ -130,15 +133,15 @@ export function Prompt(props: PromptProps) {
                 const sessionID = props.sessionID
                   ? props.sessionID
                   : await (async () => {
-                    const sessionID = await sdk.session
-                      .create({})
-                      .then((x) => x.data!.id)
-                    route.navigate({
-                      type: "session",
-                      sessionID,
-                    })
-                    return sessionID
-                  })()
+                      const sessionID = await sdk.session
+                        .create({})
+                        .then((x) => x.data!.id)
+                      route.navigate({
+                        type: "session",
+                        sessionID,
+                      })
+                      return sessionID
+                    })()
                 const messageID = Identifier.ascending("message")
                 const input = store.input
                 const parts = store.parts
@@ -147,28 +150,29 @@ export function Prompt(props: PromptProps) {
                   parts: [],
                 })
                 console.log("prompting", sessionID)
-                await sdk.session.prompt({
-                  path: {
-                    id: sessionID,
-                  },
-                  body: {
-                    ...local.model.current(),
-                    messageID,
-                    agent: local.agent.current().name,
-                    model: local.model.current(),
-                    parts: [
-                      {
-                        id: Identifier.ascending("part"),
-                        type: "text",
-                        text: input,
-                      },
-                      ...parts.map((x) => ({
-                        id: Identifier.ascending("part"),
-                        ...x,
-                      })),
-                    ],
-                  },
-                })
+                await sdk.session
+                  .prompt({
+                    path: {
+                      id: sessionID,
+                    },
+                    body: {
+                      ...local.model.current(),
+                      messageID,
+                      agent: local.agent.current().name,
+                      model: local.model.current(),
+                      parts: [
+                        {
+                          id: Identifier.ascending("part"),
+                          type: "text",
+                          text: input,
+                        },
+                        ...parts.map((x) => ({
+                          id: Identifier.ascending("part"),
+                          ...x,
+                        })),
+                      ],
+                    },
+                  })
                   .then(console.log)
                   .catch(console.log)
               }}
