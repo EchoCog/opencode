@@ -5,7 +5,13 @@
     "jsx": "preserve",
     "jsxImportSource": "@opentui/solid",
     "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM.Iterable"],
-    "customConditions": ["development"]
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "customConditions": [
+      "development"
+    ]
   }
 }
