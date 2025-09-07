@@ -106,15 +106,15 @@ export function Prompt(props: PromptProps) {
                 const sessionID = props.sessionID
                   ? props.sessionID
                   : await (async () => {
-                      const sessionID = await sdk.session
-                        .create({})
-                        .then((x) => x.data!.id)
-                      route.navigate({
-                        type: "session",
-                        sessionID,
-                      })
-                      return sessionID
-                    })()
+                    const sessionID = await sdk.session
+                      .create({})
+                      .then((x) => x.data!.id)
+                    route.navigate({
+                      type: "session",
+                      sessionID,
+                    })
+                    return sessionID
+                  })()
                 await sdk.session.prompt({
                   path: {
                     id: sessionID,

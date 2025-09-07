@@ -9,6 +9,7 @@ mkdir -p .git/hooks
 cat > .git/hooks/pre-push << 'EOF'
 #!/bin/sh
 bun run typecheck
+prettier --write $(git diff --name-only HEAD~1 HEAD)
 EOF
 
 chmod +x .git/hooks/pre-push
