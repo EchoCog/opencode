@@ -50,7 +50,12 @@ XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
 
 ### Documentation
 
-For more info on how to configure opencode [**head over to our docs**](https://opencode.ai/docs).
+- **User Documentation**: [opencode.ai/docs](https://opencode.ai/docs) - User guides and configuration
+- **Technical Documentation**: [docs/](./docs/) - Comprehensive technical architecture documentation with Mermaid diagrams
+  - [Architecture Overview](./docs/ARCHITECTURE.md) - System architecture and component relationships
+  - [API Documentation](./docs/API.md) - REST API and WebSocket endpoints
+  - [Deployment Guide](./docs/DEPLOYMENT.md) - Infrastructure and deployment procedures
+  - [Development Guide](./docs/DEVELOPMENT.md) - Developer workflow and contribution guidelines
 
 ### Contributing
 
